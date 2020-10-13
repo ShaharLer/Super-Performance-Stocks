@@ -104,7 +104,7 @@ def iterate_over_all_stock():
 
     pool.shutdown(wait=True)
     end = time.time()
-    print('Running all threads took {} seconds'.format(end - start))
+    print(f'Running all threads took {round(end - start, 2)} seconds')
 
 
 def marketwatch_scrapper_main():

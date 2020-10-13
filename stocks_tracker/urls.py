@@ -8,6 +8,7 @@ router.register('stock', views.StockViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('scrapper/', views.run_stocks_scrapper),
-    path('rater/', views.run_stock_rater),
+    path('scrapper/', views.stocks_scrapper),
+    path('rater/', views.stock_rater),
+    path('technical/', views.technically_valid_stocks),
 ]

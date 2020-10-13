@@ -29,9 +29,9 @@ def is_accelerating(data_list):
 
 
 def is_stock_in_acceleration(stock):
-    return is_accelerating(stock.net_income_growth) and \
-           is_accelerating(stock.eps_growth) and \
-           is_accelerating(stock.sales_growth)
+    return is_accelerating(stock.net_income_growth) \
+           and is_accelerating(stock.eps_growth) \
+           and is_accelerating(stock.sales_growth)
 
 
 def stocks_rater_main():

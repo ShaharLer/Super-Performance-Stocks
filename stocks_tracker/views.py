@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .serializers import StockSerializer
 from .utils.marketwatch_scrapper import *
 from .utils.stocks_rater import *
+from .utils.technical_analsys_of_stock import *
 
 
 class StockViewSet(viewsets.ModelViewSet):
@@ -12,15 +13,21 @@ class StockViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-def run_stocks_scrapper(request):
+def stocks_scrapper(request):
     marketwatch_scrapper_main()
-    return Response({"message": "finished run_stocks_scrapper"})
+    return Response({"message": "finished stocks_scrapper"})
 
 
 @api_view(['GET'])
-def run_stock_rater(request):
+def stock_rater(request):
     stocks_rater_main()
-    return Response({"message": "finished run_stocks_rater"})
+    return Response({"message": "finished stock_rater"})
+
+
+@api_view(['GET'])
+def technically_valid_stocks(request):
+    technically_valid_stocks_main()
+    return Response({"message": "finished technically_valid_stocks"})
 
 
 """
