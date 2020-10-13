@@ -1,20 +1,29 @@
-from django.shortcuts import render
-
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-
-from .serializers import StockSerializer, HelloSerializer
-from .models import Stock
-
+from .serializers import StockSerializer
 from .utils.marketwatch_scrapper import *
-
-# from rest_framework.decorators import api_view
-# from stocks_tracker.serializers import StockSerializer
+from .utils.stocks_rater import *
 
 
+class StockViewSet(viewsets.ModelViewSet):
+    serializer_class = StockSerializer
+    queryset = Stock.objects.all().order_by('symbol')
+
+
+@api_view(['GET'])
+def run_stocks_scrapper(request):
+    marketwatch_scrapper_main()
+    return Response({"message": "finished run_stocks_scrapper"})
+
+
+@api_view(['GET'])
+def run_stock_rater(request):
+    stocks_rater_main()
+    return Response({"message": "finished run_stocks_rater"})
+
+
+"""
 class HelloApiView(APIView):
     serializer_classes = HelloSerializer
 
@@ -80,40 +89,9 @@ class HelloViewSet(viewsets.ViewSet):
         return Response({'http_method': 'DELETE'})
 
 
-class StockViewSet(viewsets.ModelViewSet):
-    serializer_class = StockSerializer
-    queryset = Stock.objects.all().order_by('symbol')
-
-
-@api_view(['GET'])
-def run_scrapper(request):
-    marketwatch_scrapper_main()
-
-    # stock1 = Stock.objects.get(symbol="A")
-    """
-    if len(Stock.objects.filter(symbol="RFIL")) == 0:
-        stock = Stock()
-        stock.symbol = "RFIL"
-        stock.name = "RF-Industries"
-        stock.last_scrapper_updated = "2020-10-12T15:48:00Z"
-        stock.save()
-    else:
-        stock = Stock.objects.get(symbol="RFIL")
-        stock.name = "RF-Industries test"
-        stock.save()
-        # stock.delete()
-    """
-
-    return Response({"message": "finished"})
-
-
-"""
 # Get stocks_tracker and display them
 def index(request):
     stocks_list = models.objects.all()
     return render(request, 'stocks_tracker/index.html')
 
 """
-
-# def home(request):
-#     return HttpResponse("Hello World")
