@@ -2,7 +2,7 @@ import os.path
 import time
 from concurrent.futures import ThreadPoolExecutor
 from stocks_tracker.models import Stock
-from .marketwatch_stock_financials_class import marketwatch_stock_financials_class
+from .marketwatch_financial_stock import MarketwatchFinancialStock
 
 
 global_stocks_dict = {}  # The keys are stock symbols and the values are: net-income, eps and sales growths arrays.
@@ -60,7 +60,7 @@ def calc_stock_data_by_key(stock, stock_data_key, stock_data_dict):
 
 
 def get_stock_data(stock_symbol):
-    stock = marketwatch_stock_financials_class(stock_symbol)
+    stock = MarketwatchFinancialStock(stock_symbol)
     stock_data = {}
     calc_stock_data_by_key(stock, NET_INCOME_KEY, stock_data)
     calc_stock_data_by_key(stock, EPS_KEY, stock_data)
