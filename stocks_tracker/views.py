@@ -5,6 +5,7 @@ from .serializers import StockSerializer
 from .utils.marketwatch_scrapper import *
 from .utils.stocks_rater import *
 from .utils.technical_analsys_of_stock import *
+from .utils.breakout_stocks import *
 
 
 class StockViewSet(viewsets.ModelViewSet):
@@ -28,6 +29,12 @@ def stock_rater(request):
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
     return Response({"message": "finished technically_valid_stocks"})
+
+
+@api_view(['GET'])
+def breakout_stocks(request):
+    breakout_stocks_main()
+    return Response({"message": "finished breakout_stocks"})
 
 
 """
