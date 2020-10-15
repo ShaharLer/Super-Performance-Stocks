@@ -6,7 +6,6 @@ from .marketwatch_financial_stock import MarketwatchFinancialStock
 
 
 global_stocks_dict = {}  # The keys are stock symbols and the values are: net-income, eps and sales growths arrays.
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 ALL_STOCKS_FILE = 'all_stocks.txt'
 NET_INCOME_KEY = 'net_income'
 EPS_KEY = 'eps'
@@ -69,7 +68,6 @@ def get_stock_data(stock_symbol):
 
 
 def run_stock_scrapper(stock_key):
-    global global_stocks_dict
     try:
         stock_data = get_stock_data(stock_key.split()[0])
         global_stocks_dict[stock_key] = stock_data
@@ -77,38 +75,51 @@ def run_stock_scrapper(stock_key):
         global_stocks_dict[stock_key] = None
 
 
-def iterate_over_all_stock():
+def iterate_over_all_stock(all_stocks):
+    global global_stocks_dict
     start = time.time()
     maximum_threads = 200
     timeout_between_threads_creation = 0.02
-    stock_name_invalid_suffix = {'-', '.'}
-    all_stock_file_path = f'{BASE_DIR}\\{ALL_STOCKS_FILE}'
-    if not os.path.exists(all_stock_file_path):
-        return None
-
     pool = ThreadPoolExecutor(max_workers=maximum_threads)
-    with open(all_stock_file_path, 'r') as all_stocks:
-        for stock_line in all_stocks:
-            try:
-                stock_symbol_and_name = stock_line.split()
-                if len(stock_symbol_and_name) == 2:
-                    stock_symbol = stock_symbol_and_name[0]
-                    stock_name = stock_symbol_and_name[1]
-                    if stock_name[-1] in stock_name_invalid_suffix:
-                        stock_name = stock_name[:-1]
-                    print(stock_symbol)
-                    pool.submit(run_stock_scrapper, f'{stock_symbol} {stock_name}')
-                    time.sleep(timeout_between_threads_creation)
-            except:
-                pass
+
+    for stock_key in all_stocks:
+        try:
+            stock_symbol = stock_key.split()[0]
+            print(stock_symbol)  # print stock symbol
+            pool.submit(run_stock_scrapper, stock_key)
+            time.sleep(timeout_between_threads_creation)
+        except:
+            pass
 
     pool.shutdown(wait=True)
     end = time.time()
     print(f'Running all threads took {round(end - start, 2)} seconds')
 
 
+def get_all_stocks_list():
+    all_stocks_file_full_path = f'{os.path.dirname(os.path.realpath(__file__))}\\{ALL_STOCKS_FILE}'
+    if not os.path.exists(all_stocks_file_full_path):
+        return None
+
+    stock_name_invalid_suffix = ['-', '.']
+    stocks_list = []
+
+    with open(all_stocks_file_full_path, 'r') as all_stocks:
+        for stock_line in all_stocks:
+            stock_symbol_and_name = stock_line.split()
+            if len(stock_symbol_and_name) == 2:
+                stock_symbol = stock_symbol_and_name[0]
+                stock_name = stock_symbol_and_name[1]
+                if stock_name[-1] in stock_name_invalid_suffix:
+                    stock_name = stock_name[:-1]
+                stocks_list.append(f'{stock_symbol} {stock_name}')
+
+    return stocks_list
+
+
 def marketwatch_scrapper_main():
-    iterate_over_all_stock()
+    all_stocks_list = get_all_stocks_list()
+    iterate_over_all_stock(all_stocks_list)
     write_stocks_to_db()
 
 
