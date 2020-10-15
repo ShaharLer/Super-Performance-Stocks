@@ -1,5 +1,6 @@
-from stocks_tracker.models import Stock
 import datetime
+
+from stocks_tracker.models import Stock
 
 QUARTERS_TO_FOLLOW_GROWTH = 3
 QUARTERS_TO_FOLLOW_ACCELERATION = 2

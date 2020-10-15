@@ -2,10 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import StockSerializer
-from stocks_tracker.utils.Scrapper.marketwatch_scrapper import *
-from stocks_tracker.utils.Rater.stocks_rater import *
-from stocks_tracker.utils.Technical.technical_analsys_of_stock import *
-from stocks_tracker.utils.Breakout.breakout_stocks import *
+from stocks_tracker.utils.scrapper.marketwatch_scrapper import *
+from stocks_tracker.utils.rater.stocks_rater import *
+from stocks_tracker.utils.technical.technical_analsys_of_stock import *
+from stocks_tracker.utils.breakout.breakout_stocks import *
 
 
 class StockViewSet(viewsets.ModelViewSet):

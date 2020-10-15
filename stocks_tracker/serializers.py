@@ -2,10 +2,6 @@ from rest_framework import serializers
 from . import models
 
 
-class HelloSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=10)
-
-
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Stock

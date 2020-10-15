@@ -1,8 +1,10 @@
-from django.db.models import Q
-from stocks_tracker.models import Stock
-from yahoofinancials import YahooFinancials
 import concurrent.futures
 import datetime
+
+from django.db.models import Q
+from yahoofinancials import YahooFinancials
+
+from stocks_tracker.models import Stock
 
 STOCK_YEARLY_HIGH_MULTIPLIER = 0.75
 STOCK_YEARLY_LOW_MULTIPLIER = 1.3

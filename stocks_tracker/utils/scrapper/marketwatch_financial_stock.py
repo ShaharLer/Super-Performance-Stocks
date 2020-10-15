@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 
-
 MARKETWATCH_URL = 'https://www.marketwatch.com/investing/stock/{}/financials/balance-/quarter'
 EPS_GROWTH_TEXTS = ['EPS (Basic) Growth', 'EPS (Basic) - Growth']
 NET_INCOME_GROWTH_TEXTS = ['Net Income Growth']

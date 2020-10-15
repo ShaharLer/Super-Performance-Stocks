@@ -1,12 +1,11 @@
 import os.path
 import time
 from concurrent.futures import ThreadPoolExecutor
+
 from stocks_tracker.models import Stock
 from .marketwatch_financial_stock import MarketwatchFinancialStock
 
-
 global_stocks_dict = {}  # The keys are stock symbols and the values are: net-income, eps and sales growths arrays.
-ALL_STOCKS_FILE = 'all_stocks.txt'
 NET_INCOME_KEY = 'net_income'
 EPS_KEY = 'eps'
 SALES_KEY = 'sales'
@@ -97,7 +96,8 @@ def iterate_over_all_stock(all_stocks):
 
 
 def get_all_stocks_list():
-    all_stocks_file_full_path = f'{os.path.dirname(os.path.realpath(__file__))}\\{ALL_STOCKS_FILE}'
+    all_stocks_file = 'all_stocks.txt'
+    all_stocks_file_full_path = f'{os.path.dirname(os.path.realpath(__file__))}\\{all_stocks_file}'
     if not os.path.exists(all_stocks_file_full_path):
         return None
 

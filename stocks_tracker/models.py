@@ -18,6 +18,7 @@ class Stock(models.Model):
     last_scrapper_update = models.DateField('Last scrapper update', default=datetime.date.today())
     last_rater_update = models.DateField('Last rater update', null=True, blank=True, default=None)
     last_technically_valid_update = models.DateField('Last technical update', null=True, blank=True, default=None)
+    last_breakout = models.DateField('Last breakout', null=True, blank=True, default=None)
 
     def __str__(self):
         return self.symbol
