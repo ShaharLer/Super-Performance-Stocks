@@ -14,7 +14,6 @@ class Stock(models.Model):
     is_accelerated = models.BooleanField(null=True)
     is_eps_growth = models.BooleanField(null=True)
     is_technically_valid = models.BooleanField(null=True)
-    is_in_breakout = models.BooleanField(null=True)
     last_scrapper_update = models.DateField('Last scrapper update', default=datetime.date.today())
     last_rater_update = models.DateField('Last rater update', null=True, blank=True, default=None)
     last_technically_valid_update = models.DateField('Last technical update', null=True, blank=True, default=None)
