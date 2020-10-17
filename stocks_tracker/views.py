@@ -8,11 +8,6 @@ from stocks_tracker.utils.technical.technical_analsys_of_stock import *
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
 
-# class AllStockViewSet(viewsets.ModelViewSet):
-#     serializer_class = StockSerializer
-#     queryset = Stock.objects.filter(is_technically_valid=True).order_by('symbol')
-
-
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
     serializer_class = TechnicalStockSerializer
     queryset = Stock.objects.filter(is_technically_valid=True).order_by('symbol')
@@ -23,32 +18,26 @@ class BreakoutStocksViewSet(viewsets.ModelViewSet):
     queryset = Stock.objects.filter(last_breakout__isnull=False).order_by('symbol')
 
 
-# @api_view(['GET'])
 def count_stocks(request):
     total_stocks = Stock.objects.all().count()
-    # return HttpResponse({"Total number of stocks in DB": total_stocks})
     return HttpResponse(f'Total number of stocks in DB is: {total_stocks}')
 
 
-# @api_view(['GET'])
 def stocks_scrapper(request):
     marketwatch_scrapper_main()
     return HttpResponse('Finished stocks_scrapper')
 
 
-# @api_view(['GET'])
 def stock_rater(request):
     stocks_rater_main()
     return HttpResponse('Finished stock_rater')
 
 
-# @api_view(['GET'])
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
     return HttpResponse('Finished technically_valid_stocks')
 
 
-# @api_view(['GET'])
 def breakout_stocks(request):
     breakout_stocks_main()
     return HttpResponse('Finished breakout_stocks')
