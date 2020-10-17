@@ -1,6 +1,5 @@
+from django.http import HttpResponse
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 from stocks_tracker.utils.breakout.breakout_stocks import *
 from stocks_tracker.utils.rater.stocks_rater import *
@@ -24,34 +23,35 @@ class BreakoutStocksViewSet(viewsets.ModelViewSet):
     queryset = Stock.objects.filter(last_breakout__isnull=False).order_by('symbol')
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def count_stocks(request):
     total_stocks = Stock.objects.all().count()
-    return Response({"Total number of stocks in DB": total_stocks})
+    # return HttpResponse({"Total number of stocks in DB": total_stocks})
+    return HttpResponse(f'Total number of stocks in DB is: {total_stocks}')
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def stocks_scrapper(request):
     marketwatch_scrapper_main()
-    return Response({"message": "finished stocks_scrapper"})
+    return HttpResponse('Finished stocks_scrapper')
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def stock_rater(request):
     stocks_rater_main()
-    return Response({"message": "finished stock_rater"})
+    return HttpResponse('Finished stock_rater')
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
-    return Response({"message": "finished technically_valid_stocks"})
+    return HttpResponse('Finished technically_valid_stocks')
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def breakout_stocks(request):
     breakout_stocks_main()
-    return Response({"message": "finished breakout_stocks"})
+    return HttpResponse('Finished breakout_stocks')
 
 
 """
