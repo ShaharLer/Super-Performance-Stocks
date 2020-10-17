@@ -23,6 +23,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='stock',
             name='last_rater_updated',
-            field=models.DateField(blank=True, default=None, null=True, verbose_name='Last rater update'),
+            field=models.DateField(blank=True, default=None, null=True, verbose_name='Last rater1 update'),
         ),
     ]

@@ -63,7 +63,7 @@ def get_stock_volume_increase_ratio(stock, pivot_point):
 
 def calc_stock_breakout(stock):
     stock_volume_increase_ratio = get_stock_volume_increase_ratio(YahooFinancials(stock.symbol), stock.pivot)
-    if stock_volume_increase_ratio:  # detected breakout
+    if stock_volume_increase_ratio:  # detected breakout1
         stock.last_breakout = date.today()
         stock.save()
         send_alerts(stock.symbol, stock_volume_increase_ratio)

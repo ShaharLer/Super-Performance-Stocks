@@ -25,8 +25,8 @@ class Migration(migrations.Migration):
                 ('is_accelerated', models.BooleanField(null=True)),
                 ('is_eps_growth', models.BooleanField(null=True)),
                 ('is_technically_valid', models.BooleanField(null=True)),
-                ('last_scrapper_updated', models.DateTimeField(verbose_name='Last updated by the stock scrapper')),
-                ('last_technically_updated', models.DateTimeField(verbose_name='Last updated by the technical validation script')),
+                ('last_scrapper_updated', models.DateTimeField(verbose_name='Last updated by the stock scrapper1')),
+                ('last_technically_updated', models.DateTimeField(verbose_name='Last updated by the technical1 validation script')),
             ],
         ),
     ]
