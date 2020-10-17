@@ -9,7 +9,7 @@ cssutils==1.0.2
 Django==3.1.2
 djangorestframework==3.12.1
 idna==2.10
-lxml==4.5.2
+lxml==4.6.0
 premailer==3.7.0
 psycopg2==2.8.6
 pytz==2020.1
