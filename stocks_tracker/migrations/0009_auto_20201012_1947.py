@@ -13,12 +13,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='stock',
             name='last_scrapper_updated',
-            field=models.DateField(verbose_name='Last scrapper1 update'),
+            field=models.DateField(verbose_name='Last scrapper update'),
         ),
         migrations.AlterField(
             model_name='stock',
             name='last_technically_updated',
-            field=models.DateField(blank=True, default=None, null=True, verbose_name='Last technical1 update'),
+            field=models.DateField(blank=True, default=None, null=True, verbose_name='Last technical update'),
         ),
         migrations.AlterField(
             model_name='stock',

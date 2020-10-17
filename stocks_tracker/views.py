@@ -1,10 +1,10 @@
 from django.http import HttpResponse
 from rest_framework import viewsets
 
-from stocks_tracker.utils.Breakout.breakout_stocks import *
-from stocks_tracker.utils.Rater.stocks_rater import *
-from stocks_tracker.utils.Scrapper.marketwatch_scrapper import *
-from stocks_tracker.utils.Technical.technical_analsys_of_stock import *
+from stocks_tracker.utils.breakout.breakout_stocks import *
+from stocks_tracker.utils.rater.stocks_rater import *
+from stocks_tracker.utils.scrapper.marketwatch_scrapper import *
+from stocks_tracker.utils.technical.technical_analsys_of_stock import *
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
 

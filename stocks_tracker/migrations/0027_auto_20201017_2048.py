@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='stock',
             name='last_scrapper_update',
-            field=models.DateField(default=datetime.date(2020, 10, 17), verbose_name='Last scrapper1 update'),
+            field=models.DateField(default=datetime.date(2020, 10, 17), verbose_name='Last scrapper update'),
         ),
     ]

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='stock',
             name='last_technically_updated',
-            field=models.DateTimeField(null=True, verbose_name='Last updated by the technical1 validation script'),
+            field=models.DateTimeField(null=True, verbose_name='Last updated by the technical validation script'),
         ),
     ]
