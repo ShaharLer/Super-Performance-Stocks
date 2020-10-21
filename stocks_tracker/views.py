@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from rest_framework import viewsets
-
+from django.shortcuts import render
 from stocks_tracker.utils.breakout.breakout_stocks import *
 from stocks_tracker.utils.rater.stocks_rater import *
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import *
@@ -41,3 +41,6 @@ def technically_valid_stocks(request):
 def breakout_stocks(request):
     breakout_stocks_main()
     return HttpResponse('Finished breakout_stocks')
+
+def volume_watchlist(request):
+    return render(request, 'home_page.html')
