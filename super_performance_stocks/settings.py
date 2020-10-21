@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '+d88q3d#*8a+l9wb0416&0)2+n4=zf+hh1!it3uqhg0a-yx=e1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -76,13 +76,15 @@ WSGI_APPLICATION = 'super_performance_stocks.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'stocks',
         'USER': 'postgres',
         'PASSWORD': 'mika',
-        'HOST': 'localhost'
+        'HOST': '127.0.0.1',
+        'PORT': 5432
     }
 }
 
@@ -124,3 +126,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'Django-project/Super-Performance-Stocks/templates'
+
