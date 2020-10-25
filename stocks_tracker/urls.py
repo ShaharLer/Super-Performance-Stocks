@@ -14,4 +14,5 @@ urlpatterns = [
     path('rater/', views.stock_rater),
     path('technical/', views.technically_valid_stocks),
     path('breakout/', views.breakout_stocks),
+    path('nasdaq/', views.nasdaq_info),
 ]

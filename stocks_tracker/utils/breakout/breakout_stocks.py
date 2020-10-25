@@ -16,7 +16,7 @@ MARKET_START_TIME = START_OF_TODAY.replace(hour=9, minute=30)
 MARKET_END_TIME = START_OF_TODAY.replace(hour=16, minute=0)
 TOTAL_DAILY_MARKET_TIME_IN_MINUTES = int((MARKET_END_TIME - MARKET_START_TIME).total_seconds() / 60)
 NON_MARKET_DAYS = [5, 6]
-TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES = 15
+TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES = 10
 VOLUME_THRESHOLD = 1.4
 STOCK_PERCENT_CHANGE_THRESHOLD = 0.023
 BREAKOUT_EMAIL_RECIPIENTS = ['aradinbar91@gmail.com', 'shaharman5@gmail.com']
@@ -81,10 +81,12 @@ def detect_breakouts():
     candidate_stocks = Stock.objects.filter(is_accelerated=True).exclude(pivot=None)
     if candidate_stocks:
         while is_market_open():
+            print('\nRunning again!')
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
                 executor.map(calc_stock_breakout, candidate_stocks)
             print(f'Waiting {TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES} minutes before next run...')
             timer.sleep(TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES * 60)
+        print('Market is closed!')
     else:
         print('There are no stocks with pivot set')
 
