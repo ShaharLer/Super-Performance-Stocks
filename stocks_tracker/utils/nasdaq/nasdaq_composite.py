@@ -1,10 +1,14 @@
 class NasdaqComposite:
-    def __init__(self, ma_3, ma_3_change, ma_7, ma_7_change, is_a_buy_market):
+    def __init__(self, date, ma_3, ma_3_change, ma_7, ma_7_change, is_a_buy_market):
+        self.__date = date
         self.__ma_3 = ma_3
         self.__ma_3_change = ma_3_change
         self.__ma_7 = ma_7
         self.__ma_7_change = ma_7_change
         self.__is_a_buy_market = is_a_buy_market
+
+    def get_date(self):
+        return self.__date
 
     def get_ma_3(self):
         return self.__ma_3

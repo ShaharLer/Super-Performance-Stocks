@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta, date, time
 from enum import Enum
 
-import holidays
+import pandas_market_calendars
 import pytz
-from pandas import bdate_range
 from pandas.tseries.offsets import BDay
 from yahoofinancials import YahooFinancials
 
@@ -14,12 +13,14 @@ US_EASTERN = 'US/Eastern'
 START_OF_TODAY = datetime.combine(date.today(), time())
 MARKET_START_TIME = START_OF_TODAY.replace(hour=9, minute=30, second=0)
 MARKET_END_TIME = START_OF_TODAY.replace(hour=16, minute=0, second=0)
+NYSE_CALENDAR = pandas_market_calendars.get_calendar('NYSE')
 
 
 class MarketStatus(Enum):
     BEFORE_MARKET_OPEN = 'before market open'
     TRADING_TIME = 'trading time'
     AFTER_MARKET_CLOSED = 'after market closed'
+    MARKET_CLOSED_TODAY = 'market closed today'
 
 
 def is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change):
@@ -69,53 +70,61 @@ def get_7day_moving_avg(stock, day):
 
 
 def is_trading_day(date_to_check):
-    is_business_day = len(bdate_range(date_to_check, date_to_check)) == 1
-    is_holiday = date_to_check in holidays.USA()
-    return is_business_day and not is_holiday
+    formatted_date = date_to_check.strftime('%Y-%m-%d')
+    return not NYSE_CALENDAR.schedule(start_date=formatted_date, end_date=formatted_date).empty
 
 
-def get_current_market_status():
-    if not is_trading_day(datetime.today()):
-        return None
-
+def is_before_market_open_time():
     wall_street_timezone = pytz.timezone(US_EASTERN)
     wallstreet_local_time_now = datetime.now(wall_street_timezone).replace(tzinfo=None)
-    if wallstreet_local_time_now < MARKET_START_TIME:
-        return MarketStatus.BEFORE_MARKET_OPEN
-    elif wallstreet_local_time_now <= MARKET_END_TIME:
-        return MarketStatus.MARKET_OPEN
-    else:
-        return MarketStatus.AFTER_MARKET_CLOSED
+    return wallstreet_local_time_now < MARKET_START_TIME
 
 
-def calc_last_trading_day(day):
-    if not is_trading_day(day) or get_current_market_status() == MarketStatus.BEFORE_MARKET_OPEN:
-        day -= BDay(1)
+def calc_closest_trading_date_going_back(day):
+    today = datetime.today().date()
+    day = today if day > today else day
+
+    while not is_trading_day(day) or (day == today and is_before_market_open_time()):
+        day = (day - BDay(1)).date()
         while not is_trading_day(day):
-            day -= BDay(1)
+            day = (day - BDay(1)).date()
     return day
 
 
-def calculate_nasdaq_composite_info(stock):
-    last_active_trading_day = calc_last_trading_day(datetime.today())
-    previous_active_trading_day = calc_last_trading_day(last_active_trading_day - BDay(1))
+def calculate_nasdaq_composite_info_for_date(stock, trading_day):
+    current_ma_3 = get_3day_moving_avg(stock, trading_day)
+    current_ma_7 = get_7day_moving_avg(stock, trading_day)
 
-    current_ma_3 = get_3day_moving_avg(stock, last_active_trading_day)
-    current_ma_7 = get_7day_moving_avg(stock, last_active_trading_day)
-    previous_ma_3 = get_3day_moving_avg(stock, previous_active_trading_day)
-    previous_ma_7 = get_7day_moving_avg(stock, previous_active_trading_day)
+    previous_business_date = (trading_day - BDay(1)).date()
+    previous_trading_day = calc_closest_trading_date_going_back(previous_business_date)
+    previous_ma_3 = get_3day_moving_avg(stock, previous_trading_day)
+    previous_ma_7 = get_7day_moving_avg(stock, previous_trading_day)
+
     if current_ma_3 is None or current_ma_7 is None or previous_ma_3 is None or previous_ma_7 is None:
         return None
 
     current_ma_3_change = get_last_ma_change(previous_ma_3, current_ma_3)
     current_ma_7_change = get_last_ma_change(previous_ma_7, current_ma_7)
     buy_market = is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change)
-    return NasdaqComposite(current_ma_3, current_ma_3_change, current_ma_7, current_ma_7_change, buy_market)
+    return NasdaqComposite(trading_day, current_ma_3, current_ma_3_change, current_ma_7, current_ma_7_change, buy_market)
 
 
-def nasdaq_composite_info_main():
+def calculate_nasdaq_composite_info_dates_range(stock, start_date, end_date):
+    nasdaq_list = []
+    closest_trading_day_going_back = calc_closest_trading_date_going_back(end_date)
+    while closest_trading_day_going_back >= start_date or len(nasdaq_list) == 0:
+        nasdaq_composite_info = calculate_nasdaq_composite_info_for_date(stock, closest_trading_day_going_back)
+        if not nasdaq_composite_info:
+            return None
+        nasdaq_list.append(nasdaq_composite_info)
+        previous_business_date = (closest_trading_day_going_back - BDay(1)).date()
+        closest_trading_day_going_back = calc_closest_trading_date_going_back(previous_business_date)
+    return nasdaq_list
+
+
+def nasdaq_composite_info_main(start_date=datetime.today().date(), end_date=datetime.today().date()):
     yahoo_stock = YahooFinancials(NASDAQ_COMPOSITE_SYMBOL)
-    return calculate_nasdaq_composite_info(yahoo_stock)
+    return calculate_nasdaq_composite_info_dates_range(yahoo_stock, start_date, end_date)
 
 
 if __name__ == "__main__":
