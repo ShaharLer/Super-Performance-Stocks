@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, date, time
 from enum import Enum
+from collections import OrderedDict
 
 import pandas_market_calendars
 import pytz
@@ -21,6 +22,25 @@ class MarketStatus(Enum):
     TRADING_TIME = 'trading time'
     AFTER_MARKET_CLOSED = 'after market closed'
     MARKET_CLOSED_TODAY = 'market closed today'
+
+
+def update_nasdaq_composite_object(nasdaq_composite_object, ma_3_change, ma_7_change, buy_market):
+    nasdaq_composite_object.set_ma_3_change(ma_3_change)
+    nasdaq_composite_object.set_ma_7_change(ma_7_change)
+    nasdaq_composite_object.set_is_a_buy_market(buy_market)
+
+
+def handle_nasdaq_composite_previous_day(trading_day, ma_3, ma_7, nasdaq_dict):
+    nasdaq_composite_object = NasdaqComposite(date=trading_day, ma_3=ma_3, ma_7=ma_7)
+    nasdaq_dict[trading_day] = nasdaq_composite_object
+
+
+def handle_nasdaq_composite_current_day(day, ma_3, ma_7, ma_3_change, ma_7_change, buy_market, nasdaq_dict):
+    if day in nasdaq_dict:
+        update_nasdaq_composite_object(nasdaq_dict[day], ma_3_change, ma_7_change, buy_market)
+    else:
+        nasdaq_composite_object = NasdaqComposite(day, ma_3, ma_7, ma_3_change, ma_7_change, buy_market)
+        nasdaq_dict[day] = nasdaq_composite_object
 
 
 def is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change):
@@ -61,11 +81,15 @@ def get_moving_avg_by_parameter_and_last_trading_day(stock, ma_parameter, day_to
         print(str(e))
 
 
-def get_3day_moving_avg(stock, day):
+def get_3day_moving_avg(stock, day, nasdaq_dict):
+    if day in nasdaq_dict:
+        return nasdaq_dict[day].get_ma_3()
     return get_moving_avg_by_parameter_and_last_trading_day(stock, 3, day)
 
 
-def get_7day_moving_avg(stock, day):
+def get_7day_moving_avg(stock, day, nasdaq_dict):
+    if day in nasdaq_dict:
+        return nasdaq_dict[day].get_ma_7()
     return get_moving_avg_by_parameter_and_last_trading_day(stock, 7, day)
 
 
@@ -80,6 +104,27 @@ def is_before_market_open_time():
     return wallstreet_local_time_now < MARKET_START_TIME
 
 
+def calculate_nasdaq_composite_info_for_date(stock, trading_day, nasdaq_dict):
+    ma_3 = get_3day_moving_avg(stock, trading_day, nasdaq_dict)
+    ma_7 = get_7day_moving_avg(stock, trading_day, nasdaq_dict)
+
+    previous_business_date = (trading_day - BDay(1)).date()
+    previous_trading_day = calc_closest_trading_date_going_back(previous_business_date)
+    previous_ma_3 = get_3day_moving_avg(stock, previous_trading_day, nasdaq_dict)
+    previous_ma_7 = get_7day_moving_avg(stock, previous_trading_day, nasdaq_dict)
+
+    if ma_3 is None or ma_7 is None or previous_ma_3 is None or previous_ma_7 is None:
+        return None
+
+    ma_3_change = get_last_ma_change(previous_ma_3, ma_3)
+    ma_7_change = get_last_ma_change(previous_ma_7, ma_7)
+    buy_market = is_a_buy_market(ma_3, ma_7, ma_3_change, ma_7_change)
+
+    handle_nasdaq_composite_current_day(trading_day, ma_3, ma_7, ma_3_change, ma_7_change, buy_market, nasdaq_dict)
+    handle_nasdaq_composite_previous_day(previous_trading_day, previous_ma_3, previous_ma_7, nasdaq_dict)
+    return True
+
+
 def calc_closest_trading_date_going_back(day):
     today = datetime.today().date()
     day = today if day > today else day
@@ -91,40 +136,23 @@ def calc_closest_trading_date_going_back(day):
     return day
 
 
-def calculate_nasdaq_composite_info_for_date(stock, trading_day):
-    current_ma_3 = get_3day_moving_avg(stock, trading_day)
-    current_ma_7 = get_7day_moving_avg(stock, trading_day)
-
-    previous_business_date = (trading_day - BDay(1)).date()
-    previous_trading_day = calc_closest_trading_date_going_back(previous_business_date)
-    previous_ma_3 = get_3day_moving_avg(stock, previous_trading_day)
-    previous_ma_7 = get_7day_moving_avg(stock, previous_trading_day)
-
-    if current_ma_3 is None or current_ma_7 is None or previous_ma_3 is None or previous_ma_7 is None:
-        return None
-
-    current_ma_3_change = get_last_ma_change(previous_ma_3, current_ma_3)
-    current_ma_7_change = get_last_ma_change(previous_ma_7, current_ma_7)
-    buy_market = is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change)
-    return NasdaqComposite(trading_day, current_ma_3, current_ma_3_change, current_ma_7, current_ma_7_change, buy_market)
-
-
 def calculate_nasdaq_composite_info_dates_range(stock, start_date, end_date):
-    nasdaq_list = []
-    closest_trading_day_going_back = calc_closest_trading_date_going_back(end_date)
-    while closest_trading_day_going_back >= start_date or len(nasdaq_list) == 0:
-        nasdaq_composite_info = calculate_nasdaq_composite_info_for_date(stock, closest_trading_day_going_back)
-        if not nasdaq_composite_info:
+    nasdaq_component_dict = OrderedDict()
+    closest_trading_day = calc_closest_trading_date_going_back(end_date)
+    while closest_trading_day >= start_date or len(nasdaq_component_dict) == 0:
+        if not calculate_nasdaq_composite_info_for_date(stock, closest_trading_day, nasdaq_component_dict):
             return None
-        nasdaq_list.append(nasdaq_composite_info)
-        previous_business_date = (closest_trading_day_going_back - BDay(1)).date()
-        closest_trading_day_going_back = calc_closest_trading_date_going_back(previous_business_date)
-    return nasdaq_list
+        previous_business_day = (closest_trading_day - BDay(1)).date()
+        closest_trading_day = calc_closest_trading_date_going_back(previous_business_day)
+
+    nasdaq_composite_list = list(nasdaq_component_dict.values())[:-1]
+    return nasdaq_composite_list
 
 
 def nasdaq_composite_info_main(start_date=datetime.today().date(), end_date=datetime.today().date()):
     yahoo_stock = YahooFinancials(NASDAQ_COMPOSITE_SYMBOL)
-    return calculate_nasdaq_composite_info_dates_range(yahoo_stock, start_date, end_date)
+    nasdaq_composite_list = calculate_nasdaq_composite_info_dates_range(yahoo_stock, start_date, end_date)
+    return nasdaq_composite_list
 
 
 if __name__ == "__main__":
