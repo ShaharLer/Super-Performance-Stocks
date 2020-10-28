@@ -80,12 +80,9 @@ def calc_historical_prices(stock, ma_calc_end_range, trading_days_to_reach):
 
 
 def get_moving_avg_by_parameter(trading_day, moving_avg_duration):
-    try:
-        historical_prices = calc_historical_prices(nasdaq_stock, trading_day + timedelta(days=1), moving_avg_duration)
-        ma_by_parameter = calc_moving_avg_by_parameter(historical_prices, moving_avg_duration)
-        return round(ma_by_parameter, 2)
-    except Exception as e:
-        print(str(e))
+    historical_prices = calc_historical_prices(nasdaq_stock, trading_day + timedelta(days=1), moving_avg_duration)
+    ma_by_parameter = calc_moving_avg_by_parameter(historical_prices, moving_avg_duration)
+    return round(ma_by_parameter, 2)
 
 
 def calculate_nasdaq_composite_info(trading_day):
@@ -97,8 +94,12 @@ def calculate_nasdaq_composite_info(trading_day):
 
 
 def get_nasdaq_composite_info(business_days_list):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(business_days_list)) as executor:
-        executor.map(calculate_nasdaq_composite_info, business_days_list)
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(business_days_list)) as executor:
+            executor.map(calculate_nasdaq_composite_info, business_days_list)
+    except Exception as e:
+        print(str(e))
+        return None
 
     if len(nasdaq_heap) < len(business_days_list):
         return None
