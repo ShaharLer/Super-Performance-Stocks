@@ -130,20 +130,20 @@ def calc_closest_trading_date_going_back(day):
     return day
 
 
-def get_business_days_list(start_date, end_date):
+def get_business_days_list(from_date, to_date):
     business_days_list = []
-    closest_trading_day = calc_closest_trading_date_going_back(end_date)
+    closest_trading_day = calc_closest_trading_date_going_back(to_date)
 
     # we need at least 2 days in order to calculate later moving avg changes
-    while len(business_days_list) < 2 or business_days_list[-1] >= start_date:
+    while len(business_days_list) < 2 or business_days_list[-1] >= from_date:
         business_days_list.append(closest_trading_day)
         closest_trading_day = calc_closest_trading_date_going_back((closest_trading_day - BDay(1)).date())
 
     return business_days_list
 
 
-def nasdaq_composite_info_main(start_date, end_date):
-    business_days_list = get_business_days_list(start_date, end_date)
+def nasdaq_composite_info_main(from_date, to_date):
+    business_days_list = get_business_days_list(from_date, to_date)
     nasdaq_composite_list = get_nasdaq_composite_info(business_days_list)
     return nasdaq_composite_list
 

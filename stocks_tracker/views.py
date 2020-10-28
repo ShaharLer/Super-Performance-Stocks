@@ -69,10 +69,10 @@ def get_nasdaq_composite_response(nasdaq_composite_info_list):
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def get_incorrect_dates_range_error_response(start_date, end_date):
-    start_date = start_date.strftime("%d-%m-%Y")
-    end_date = end_date.strftime("%d-%m-%Y")
-    return Response({'message': f'start_date ({start_date}) cannot be greater than end_date ({end_date})'},
+def get_incorrect_dates_range_error_response(from_date, to_date):
+    from_date = from_date.strftime("%d-%m-%Y")
+    to_date = to_date.strftime("%d-%m-%Y")
+    return Response({'message': f'from_date ({from_date}) cannot be greater than to_date ({to_date})'},
                     status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -82,27 +82,27 @@ def parse_date(request, param):
     return date
 
 
-def parse_dates(request, start_date_param, end_date_param):
-    start_date = parse_date(request, start_date_param)
-    end_date = parse_date(request, end_date_param)
+def parse_dates(request, from_date_param, to_date_param):
+    from_date = parse_date(request, from_date_param)
+    to_date = parse_date(request, to_date_param)
 
-    if start_date and not end_date:
-        end_date = start_date
-    elif end_date and not start_date:
-        start_date = end_date
-    elif not start_date and not end_date:
-        start_date = datetime.today().date()
-        end_date = datetime.today().date()
+    if from_date and not to_date:
+        to_date = from_date
+    elif to_date and not from_date:
+        from_date = to_date
+    elif not from_date and not to_date:
+        from_date = datetime.today().date()
+        to_date = datetime.today().date()
 
-    return start_date, end_date
+    return from_date, to_date
 
 
 @api_view(['GET'])
 def nasdaq_info(request):
-    start_date, end_date = parse_dates(request, 'start_date', 'end_date')
+    from_date, to_date = parse_dates(request, 'from_date', 'to_date')
 
-    if end_date < start_date:
-        return get_incorrect_dates_range_error_response(start_date, end_date)
+    if to_date < from_date:
+        return get_incorrect_dates_range_error_response(from_date, to_date)
 
-    nasdaq_composite_info_list = nasdaq_composite_info_main(start_date, end_date)
+    nasdaq_composite_info_list = nasdaq_composite_info_main(from_date, to_date)
     return get_nasdaq_composite_response(nasdaq_composite_info_list)
