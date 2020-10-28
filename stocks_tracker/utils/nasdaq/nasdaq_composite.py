@@ -42,3 +42,15 @@ class NasdaqComposite:
 
     def set_is_a_buy_market(self, is_a_buy_market):
         self.__is_a_buy_market = is_a_buy_market
+
+    def __lt__(self, other):
+        return other.get_date() < self.get_date()
+
+    def __gt__(self, other):
+        return other.__lt__(self)
+
+    def __eq__(self, other):
+        return self.get_date() == other.get_date()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
