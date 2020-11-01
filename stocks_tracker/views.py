@@ -14,6 +14,9 @@ from stocks_tracker.utils.technical.technical_analsys_of_stock import technicall
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
+NASDAQ_FROM_DATE_KEY = 'from_date'
+NASDAQ_TO_DATE_KEY = 'to_date'
+
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
     serializer_class = TechnicalStockSerializer
@@ -55,25 +58,25 @@ def get_nasdaq_composite_response(nasdaq_composite_info_list):
         response = []
         for nasdaq_composite_info in nasdaq_composite_info_list:
             nasdaq_composite_object = {
-                'date': nasdaq_composite_info.get_date(),
+                'date': nasdaq_composite_info.get_date().strftime('%d-%m-%Y'),
                 'ma3': nasdaq_composite_info.get_ma_3(),
-                'ma3Change': nasdaq_composite_info.get_ma_3_change(),
+                'ma3Change': f'{nasdaq_composite_info.get_ma_3_change()}%',
                 'ma7': nasdaq_composite_info.get_ma_7(),
-                'ma7Change': nasdaq_composite_info.get_ma_7_change(),
-                'isBuyMarket': nasdaq_composite_info.get_is_a_buy_market()
+                'ma7Change': f'{nasdaq_composite_info.get_ma_7_change()}%',
+                'action': nasdaq_composite_info.get_market_action().value
             }
             response.append(nasdaq_composite_object)
         return Response(response, status=status.HTTP_200_OK)
     except:
-        return Response({'message': 'Failed to parse info from the server'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        error_message = 'Failed to parse info from the server'
+        return Response({'message': error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def get_incorrect_dates_range_error_response(from_date, to_date):
     from_date = from_date.strftime("%d-%m-%Y")
     to_date = to_date.strftime("%d-%m-%Y")
-    return Response({'message': f'from_date ({from_date}) cannot be greater than to_date ({to_date})'},
-                    status=status.HTTP_400_BAD_REQUEST)
+    error_message = f'{NASDAQ_FROM_DATE_KEY} ({from_date}) cannot be greater than {NASDAQ_TO_DATE_KEY} ({to_date})'
+    return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def parse_date(request, param):
@@ -99,7 +102,7 @@ def parse_dates(request, from_date_param, to_date_param):
 
 @api_view(['GET'])
 def nasdaq_info(request):
-    from_date, to_date = parse_dates(request, 'from_date', 'to_date')
+    from_date, to_date = parse_dates(request, NASDAQ_FROM_DATE_KEY, NASDAQ_TO_DATE_KEY)
 
     if to_date < from_date:
         return get_incorrect_dates_range_error_response(from_date, to_date)

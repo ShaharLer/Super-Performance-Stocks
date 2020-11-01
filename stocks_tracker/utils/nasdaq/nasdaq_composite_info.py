@@ -8,25 +8,31 @@ from pandas.tseries.offsets import BDay
 from yahoofinancials import YahooFinancials
 
 from .nasdaq_composite import *
+from .market_action import *
 
 NASDAQ_COMPOSITE_SYMBOL = '^IXIC'
 NYSE_CALENDAR = pandas_market_calendars.get_calendar('NYSE')
 US_EASTERN = 'US/Eastern'
 START_OF_TODAY = datetime.combine(date.today(), time())
-MARKET_START_TIME = START_OF_TODAY.replace(hour=8, minute=30, second=0)  # change according to winter clock
+MARKET_START_TIME = START_OF_TODAY.replace(hour=9, minute=30, second=0)  # change according to winter clock
 
 nasdaq_stock = YahooFinancials(NASDAQ_COMPOSITE_SYMBOL)
 nasdaq_heap = []
 
 
-def update_nasdaq_stock(stock, ma_3_change, ma_7_change, buy_market):
+def update_nasdaq_stock(stock, ma_3_change, ma_7_change, market_action):
     stock.set_ma_3_change(ma_3_change)
     stock.set_ma_7_change(ma_7_change)
-    stock.set_is_a_buy_market(buy_market)
+    stock.set_market_action(market_action)
 
 
 def is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change):
     return current_ma_3 > current_ma_7 and current_ma_3_change > current_ma_7_change > 0
+
+
+def calc_market_action(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change):
+    buy_market = is_a_buy_market(current_ma_3, current_ma_7, current_ma_3_change, current_ma_7_change)
+    return MarketAction.BUY if buy_market else MarketAction.HOLD
 
 
 def get_moving_avg_change(current_moving_avg, prev_moving_avg):
@@ -38,8 +44,8 @@ def calc_and_update_nasdaq_stock(current_day_nasdaq_stock, prev_day_nasdaq_stock
     current_ma_7 = current_day_nasdaq_stock.get_ma_7()
     ma_3_change = get_moving_avg_change(current_ma_3, prev_day_nasdaq_stock.get_ma_3())
     ma_7_change = get_moving_avg_change(current_ma_7, prev_day_nasdaq_stock.get_ma_7())
-    buy_market = is_a_buy_market(current_ma_3, current_ma_7, ma_3_change, ma_7_change)
-    update_nasdaq_stock(current_day_nasdaq_stock, ma_3_change, ma_7_change, buy_market)
+    market_action = calc_market_action(current_ma_3, current_ma_7, ma_3_change, ma_7_change)
+    update_nasdaq_stock(current_day_nasdaq_stock, ma_3_change, ma_7_change, market_action)
 
 
 def calculate_nasdaq_objects_list():
