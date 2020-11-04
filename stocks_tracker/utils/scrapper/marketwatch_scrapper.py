@@ -12,10 +12,15 @@ SALES_KEY = 'sales'
 DATA_DELIMITERS = ['%']
 
 
+def get_stock(symbol):
+    stock = Stock() if len(Stock.objects.filter(symbol=symbol)) == 0 else Stock.objects.get(symbol=symbol)
+    return stock
+
+
 def write_to_db(stock_key, stock_data):
     try:
         stock_symbol = stock_key.split()[0]
-        stock = Stock() if len(Stock.objects.filter(symbol=stock_symbol)) == 0 else Stock.objects.get(symbol=stock_symbol)
+        stock = get_stock(stock_symbol)
         stock.symbol = stock_symbol
         stock.name = stock_key.split()[1]
         if stock_data is not None:

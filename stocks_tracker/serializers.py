@@ -5,7 +5,7 @@ from . import models
 class TechnicalStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Stock
-        fields = ('id', 'symbol', 'name', 'pivot', 'last_technically_valid_update')
+        fields = ('symbol', 'name', 'pivot')
 
 
 class BreakoutStockSerializer(serializers.ModelSerializer):

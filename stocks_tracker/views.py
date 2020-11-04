@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from stocks_tracker.utils.breakout.breakout_stocks import breakout_stocks_main
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
+from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.technical.technical_analsys_of_stock import technically_valid_stocks_main
@@ -16,6 +17,8 @@ from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
 NASDAQ_FROM_DATE_KEY = 'from_date'
 NASDAQ_TO_DATE_KEY = 'to_date'
+STOCK_SYMBOL_KEY = 'symbol'
+STOCK_PIVOT_KEY = 'pivot'
 
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
@@ -31,6 +34,42 @@ class BreakoutStocksViewSet(viewsets.ModelViewSet):
 def count_stocks(request):
     total_stocks = Stock.objects.all().count()
     return HttpResponse(f'Total number of stocks in DB is: {total_stocks}')
+
+
+def parse_params(params, symbol_key, pivot_key):
+    symbol = params.get(symbol_key, '')
+    pivot_value = params.get(pivot_key, '')
+    return symbol, pivot_value
+
+
+def get_response_object(message, status_code):
+    return Response({'message': message}, status=status_code)
+
+
+def get_response_message_and_code(request):
+    if not request.data:
+        return 'No parameters were given', status.HTTP_400_BAD_REQUEST
+
+    symbol, pivot_value = parse_params(request.data, STOCK_SYMBOL_KEY, STOCK_PIVOT_KEY)
+    if not symbol or not pivot_value:
+        return 'Both symbol and pivot should be given the request', status.HTTP_400_BAD_REQUEST
+
+    try:
+        pivot_value = float(pivot_value)
+    except Exception as e:
+        return 'Pivot must be a float number', status.HTTP_400_BAD_REQUEST
+
+    updated_stock = update_stock_in_db(symbol, pivot_value)
+    if not updated_stock:
+        return 'Failed to update pivot for the stock', status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return f'Stock {symbol} was updated successfully with pivot {pivot_value}', status.HTTP_200_OK
+
+
+@api_view(['PUT'])
+def pivot(request):
+    message, status_code = get_response_message_and_code(request)
+    return get_response_object(message, status_code)
 
 
 def stocks_scrapper(request):
@@ -79,15 +118,14 @@ def get_incorrect_dates_range_error_response(from_date, to_date):
     return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
-def parse_date(request, param):
-    date = request.GET.get(param, '')
-    date = dateutil.parser.isoparse(date).date() if date else date
-    return date
+def parse_date(params, param):
+    date = params.get(param, '')
+    return dateutil.parser.isoparse(date).date() if date else date
 
 
-def parse_dates(request, from_date_param, to_date_param):
-    from_date = parse_date(request, from_date_param)
-    to_date = parse_date(request, to_date_param)
+def parse_dates(params, from_date_param, to_date_param):
+    from_date = parse_date(params, from_date_param)
+    to_date = parse_date(params, to_date_param)
 
     if from_date and not to_date:
         to_date = from_date
@@ -102,7 +140,7 @@ def parse_dates(request, from_date_param, to_date_param):
 
 @api_view(['GET'])
 def nasdaq_info(request):
-    from_date, to_date = parse_dates(request, NASDAQ_FROM_DATE_KEY, NASDAQ_TO_DATE_KEY)
+    from_date, to_date = parse_dates(request.GET, NASDAQ_FROM_DATE_KEY, NASDAQ_TO_DATE_KEY)
 
     if to_date < from_date:
         return get_incorrect_dates_range_error_response(from_date, to_date)
