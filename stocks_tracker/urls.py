@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('stocks/count/', views.count_stocks),
     path('stocks/pivot/', views.pivot),
+    path('stocks/pivot/<str:symbol>/', views.pivot),
     path('scrapper/', views.stocks_scrapper),
     path('rater/', views.stock_rater),
     path('technical/', views.technically_valid_stocks),

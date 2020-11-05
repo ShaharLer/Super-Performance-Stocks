@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from stocks_tracker.utils.breakout.breakout_stocks import breakout_stocks_main
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
-from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db
+from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.technical.technical_analsys_of_stock import technically_valid_stocks_main
@@ -46,7 +46,7 @@ def get_response_object(message, status_code):
     return Response({'message': message}, status=status_code)
 
 
-def get_response_message_and_code(request):
+def get_response_message_and_code_for_update(request):
     if not request.data:
         return 'No parameters were given', status.HTTP_400_BAD_REQUEST
 
@@ -61,14 +61,31 @@ def get_response_message_and_code(request):
 
     updated_stock = update_stock_in_db(symbol, pivot_value)
     if not updated_stock:
-        return 'Failed to update pivot for the stock', status.HTTP_500_INTERNAL_SERVER_ERROR
+        return f'Failed to update pivot for the stock {symbol}', status.HTTP_500_INTERNAL_SERVER_ERROR
 
     return f'Stock {symbol} was updated successfully with pivot {pivot_value}', status.HTTP_200_OK
 
 
-@api_view(['PUT'])
-def pivot(request):
-    message, status_code = get_response_message_and_code(request)
+def get_response_message_and_code_for_remove(symbol):
+    if not symbol:
+        return 'The stock symbol must be given in the url path', status.HTTP_400_BAD_REQUEST
+
+    updated_stock = remove_technical_attribute(symbol)
+    if not updated_stock:
+        return f'Failed to remove the technically valid stock attribute from the stock {symbol}', \
+               status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return f'The technically valid stock attribute was removed successfully from the stock {symbol}', \
+           status.HTTP_200_OK
+
+
+@api_view(['PUT', 'DELETE'])
+def pivot(request, symbol=None):
+    if request.method == 'PUT':
+        message, status_code = get_response_message_and_code_for_update(request)
+    else:  # request.method == 'DELETE':
+        message, status_code = get_response_message_and_code_for_remove(symbol)
+
     return get_response_object(message, status_code)
 
 
