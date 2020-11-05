@@ -5,7 +5,9 @@ from stocks_tracker.utils.breakout.breakout_stocks import *
 from stocks_tracker.utils.rater.stocks_rater import *
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import *
 from stocks_tracker.utils.technical.technical_analsys_of_stock import *
+from stocks_tracker.utils.volume.volume_watchlist_of_valid_stock import *
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
+from django.http import JsonResponse
 
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
@@ -20,7 +22,7 @@ class BreakoutStocksViewSet(viewsets.ModelViewSet):
 
 def count_stocks(request):
     total_stocks = Stock.objects.all().count()
-    return HttpResponse(f'Total number of stocks in DB is: {total_stocks}')
+    return HttpResponse('Total number of stocks in DB is: {total_stocks}')
 
 
 def stocks_scrapper(request):
@@ -44,3 +46,7 @@ def breakout_stocks(request):
 
 def volume_watchlist(request):
     return render(request, 'home_page.html')
+
+def volume_update(request):
+    data = volume_watchlist_of_valid_stock_main()
+    return JsonResponse(data, safe=False)

@@ -17,5 +17,6 @@ urlpatterns = [
     path('technical/', views.technically_valid_stocks),
     path('breakout/', views.breakout_stocks),
     path('volume-watchlist/', views.volume_watchlist),
+    path('volume_update/', views.volume_update),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

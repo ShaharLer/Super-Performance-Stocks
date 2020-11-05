@@ -7,18 +7,17 @@
   </head>
 <body>
     <div class="container">
-        <td> <button onclick="Add_stock()"> click to Add a stock </button> 
     <table id ="my_table" class="responsive-table">
-      <caption>Our Protfolio</caption>
+      <caption>Live Volume</caption>
       <thead>
         <tr>
-          <th scope="col">Stock Symbol</th>
-          <th scope="col">Date buy</th>
-          <th scope="col">Date sell</th>
-          <th scope="col">buy price</th>
-          <th scope="col">sell price</th>
-          <th scope="col">select</th>       
-          <th scope="col">profit/loss</th>
+          <th scope="col"> <button onclick="sortTable(0)">Stock symbol</button></th>
+          <th scope="col">Eps array</th>
+          <th scope="col">Net Income Array</th>
+          <th scope="col">Sales Array</th>
+          <th scope="col"><button onclick="sortTable(4)">Volume</button></th>
+          <th scope="col"><button onclick="sortTable(5)">Price change</button></th>
+
 
         </tr>
       </thead>
