@@ -11,4 +11,4 @@ class TechnicalStockSerializer(serializers.ModelSerializer):
 class BreakoutStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Stock
-        fields = ('id', 'symbol', 'name', 'last_breakout')
+        fields = ('symbol', 'name', 'pivot', 'last_breakout')

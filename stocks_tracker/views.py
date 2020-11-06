@@ -1,12 +1,13 @@
 from datetime import datetime
 
 import dateutil.parser
+import datetime
 from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from stocks_tracker.utils.breakout.breakout_stocks import breakout_stocks_main
+from stocks_tracker.utils.breakout.breakout_detector import breakout_detector
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
@@ -28,7 +29,7 @@ class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
 
 class BreakoutStocksViewSet(viewsets.ModelViewSet):
     serializer_class = BreakoutStockSerializer
-    queryset = Stock.objects.filter(last_breakout__isnull=False).order_by('symbol')
+    queryset = Stock.objects.filter(last_breakout=datetime.date.today()).order_by('symbol')
 
 
 def count_stocks(request):
@@ -104,8 +105,8 @@ def technically_valid_stocks(request):
     return HttpResponse('Finished technically_valid_stocks')
 
 
-def breakout_stocks(request):
-    breakout_stocks_main()
+def breakout_detector(request):
+    breakout_detector()
     return HttpResponse('Finished breakout_stocks')
 
 

@@ -78,7 +78,7 @@ def is_market_open():
 
 
 def detect_breakouts():
-    candidate_stocks = Stock.objects.filter(is_accelerated=True).exclude(pivot=None)
+    candidate_stocks = Stock.objects.filter(is_technically_valid=True).exclude(pivot=None)
     if candidate_stocks:
         while is_market_open():
             print('\nRunning again!')
@@ -102,7 +102,7 @@ def run_breakout_threads():
         print('Program was closed by user')
 
 
-def breakout_stocks_main():
+def breakout_detector():
     global social_media
     password = getpass.getpass('Enter the email notifications password: ')
     social_media.set_password(password)
@@ -110,4 +110,4 @@ def breakout_stocks_main():
 
 
 if __name__ == "__main__":
-    breakout_stocks_main()
+    breakout_detector()
