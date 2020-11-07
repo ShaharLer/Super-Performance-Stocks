@@ -1,10 +1,11 @@
-import datetime
+from background_task import background
+from django.utils import timezone
 
 from stocks_tracker.models import Stock
 
 QUARTERS_TO_FOLLOW_GROWTH = 3
 QUARTERS_TO_FOLLOW_ACCELERATION = 2
-EPS_GROWTH_THRESHOLD = 35
+EPS_GROWTH_THRESHOLD = 30
 
 
 def is_stock_in_eps_growth(eps_list):
@@ -35,17 +36,14 @@ def is_stock_in_acceleration(stock):
            and is_accelerating(stock.sales_growth)
 
 
+@background()
 def stocks_rater_main():
     stocks = Stock.objects.all()
     for stock in stocks:
         try:
-            stock.is_accelerated = True if is_stock_in_acceleration(stock) else False
-            stock.is_eps_growth = True if is_stock_in_eps_growth(stock.eps_growth) else False
-            stock.last_rater_update = datetime.date.today()
+            stock.is_accelerated = is_stock_in_acceleration(stock)
+            stock.is_eps_growth = is_stock_in_eps_growth(stock.eps_growth)
+            stock.last_rater_update = timezone.now
             stock.save()
         except:
-            pass
-
-
-if __name__ == "__main__":
-    stocks_rater_main()
+            print(f'Failed to save stock {stock.symbol} in the DB after stock rater')

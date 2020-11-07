@@ -1,7 +1,8 @@
 import concurrent.futures
-import datetime
 
+from background_task import background
 from django.db.models import Q
+from django.utils import timezone
 from yahoofinancials import YahooFinancials
 
 from stocks_tracker.models import Stock
@@ -26,17 +27,17 @@ def is_stock_technically_valid(stock):
 
 
 def calc_stock_technical_validation(stock):
-    yahoo_stock = YahooFinancials(stock.symbol)
-    stock.is_technically_valid = is_stock_technically_valid(yahoo_stock)
-    stock.last_technically_valid_update = datetime.date.today()
-    stock.save()
+    try:
+        yahoo_stock = YahooFinancials(stock.symbol)
+        stock.is_technically_valid = is_stock_technically_valid(yahoo_stock)
+        stock.last_technically_valid_update = timezone.now
+        stock.save()
+    except:
+        print(f'Failed to save stock {stock.symbol} in the DB after technical analysis')
 
 
+@background()
 def technically_valid_stocks_main():
-    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True))
+    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True)).exclude(is_breakout=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
         executor.map(calc_stock_technical_validation, candidate_stocks)
-
-
-if __name__ == "__main__":
-    technically_valid_stocks_main()

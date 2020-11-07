@@ -1,41 +1,55 @@
 import concurrent.futures
-import getpass
 import threading
 import time as timer
 from datetime import datetime, date, time
 
+import pandas_market_calendars
 import pytz
+from background_task import background
+from django.db.models import Q
+from django.utils import timezone
 from yahoofinancials import YahooFinancials
 
 from stocks_tracker.models import Stock
 from .social_media import SocialMedia
 
 US_EASTERN = 'US/Eastern'
+NYSE_CALENDAR = pandas_market_calendars.get_calendar('NYSE')
 START_OF_TODAY = datetime.combine(date.today(), time())
 MARKET_START_TIME = START_OF_TODAY.replace(hour=9, minute=30)
 MARKET_END_TIME = START_OF_TODAY.replace(hour=16, minute=0)
 TOTAL_DAILY_MARKET_TIME_IN_MINUTES = int((MARKET_END_TIME - MARKET_START_TIME).total_seconds() / 60)
 NON_MARKET_DAYS = [5, 6]
-TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES = 10
+TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES = 15
 VOLUME_THRESHOLD = 1.4
 STOCK_PERCENT_CHANGE_THRESHOLD = 0.023
-BREAKOUT_EMAIL_RECIPIENTS = ['aradinbar91@gmail.com', 'shaharman5@gmail.com']
+BREAKOUT_EMAIL_RECIPIENTS = ['aradinbar91@gmail.com', 'shaharman5@gmail.com', 'tkhtur1@gmail.com']
 lock = threading.Lock()
 social_media = SocialMedia()
 
 
 def send_alerts(stock_symbol, stock_volume_increase_ratio):
-    message_to_send = f'Breakout!!! Buy alert for {stock_symbol}, as volume is bigger than the average by ' \
-                      f'{stock_volume_increase_ratio}'
-    print(message_to_send)
+    message_to_send = f'Breakout!!! Buy alert for {stock_symbol}.\nCurrent volume is {stock_volume_increase_ratio} ' \
+                      f'times bigger than relational average volume'
     lock.acquire()
     try:
         # social_media.send_whatsapp_message('"Stocks alerts"', message_to_send) TODO decide if should stay
         social_media.send_gmail_message(BREAKOUT_EMAIL_RECIPIENTS, message_to_send)
     except KeyboardInterrupt:
         print('Sending alerts thread was closed by user')
+    except Exception as e:
+        print(f'Failed to send email of breakout for the stock {stock_symbol}')
     finally:
         lock.release()
+
+
+def update_stock_breakout_in_db(stock):
+    try:
+        stock.is_breakout = True
+        stock.last_breakout = timezone.now
+        stock.save()
+    except Exception as e:
+        print(f'Failed to update breakout for stock {stock.symbol} in the DB: {str(e)}')
 
 
 def get_relative_market_time_today():
@@ -64,31 +78,36 @@ def get_stock_volume_increase_ratio(stock, pivot_point):
 def calc_stock_breakout(stock):
     stock_volume_increase_ratio = get_stock_volume_increase_ratio(YahooFinancials(stock.symbol), stock.pivot)
     if stock_volume_increase_ratio:  # detected breakout
-        stock.last_breakout = date.today()
-        stock.save()
-        send_alerts(stock.symbol, stock_volume_increase_ratio)
+        update_stock_breakout_in_db(stock)
+        send_alerts(stock.symbol, round(stock_volume_increase_ratio, 2))
     else:
-        print(f'No breakout so far for: {stock.symbol}')
+        print(f'{stock.symbol}: No breakout')
+
+
+def is_today_a_trading_day():
+    formatted_date = datetime.today().strftime('%Y-%m-%d')
+    return not NYSE_CALENDAR.schedule(start_date=formatted_date, end_date=formatted_date).empty
 
 
 def is_market_open():
-    wallstreet_local_time_now = datetime.now(pytz.timezone(US_EASTERN)).replace(tzinfo=None)
-    week_day = wallstreet_local_time_now.weekday()
-    return (week_day not in NON_MARKET_DAYS) and (MARKET_START_TIME <= wallstreet_local_time_now <= MARKET_END_TIME)
+    wall_street_timezone = pytz.timezone(US_EASTERN)
+    wallstreet_local_time_now = datetime.now(wall_street_timezone).replace(tzinfo=None)
+    return MARKET_START_TIME < wallstreet_local_time_now < MARKET_END_TIME
 
 
 def detect_breakouts():
-    candidate_stocks = Stock.objects.filter(is_technically_valid=True).exclude(pivot=None)
-    if candidate_stocks:
-        while is_market_open():
+    while is_market_open():
+        candidate_stocks = Stock.objects.filter(is_technically_valid=True).exclude(Q(pivot=None) | Q(is_breakout=True))
+        if candidate_stocks:
             print('\nRunning again!')
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
                 executor.map(calc_stock_breakout, candidate_stocks)
             print(f'Waiting {TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES} minutes before next run...')
             timer.sleep(TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES * 60)
-        print('Market is closed!')
-    else:
-        print('There are no stocks with pivot set')
+        else:
+            print('There are no more stocks with pivot set that do not have breakout\nExiting...')
+            return
+    print('Market is closed!\nExiting...')
 
 
 def run_breakout_threads():
@@ -102,12 +121,12 @@ def run_breakout_threads():
         print('Program was closed by user')
 
 
-def breakout_detector():
+@background()
+def breakout(password):
+    if not is_today_a_trading_day():
+        print('Today there is no trading in the NYSE')
+        return
+
     global social_media
-    password = getpass.getpass('Enter the email notifications password: ')
     social_media.set_password(password)
     run_breakout_threads()
-
-
-if __name__ == "__main__":
-    breakout_detector()

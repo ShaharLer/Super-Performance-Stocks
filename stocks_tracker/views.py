@@ -1,18 +1,19 @@
-from datetime import datetime
+import datetime
+import subprocess
+from datetime import datetime as date_time
 
 import dateutil.parser
-import datetime
 from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from stocks_tracker.utils.breakout.breakout_detector import breakout_detector
+from stocks_tracker.utils.breakout.breakout import breakout
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
-from stocks_tracker.utils.technical.technical_analsys_of_stock import technically_valid_stocks_main
+from stocks_tracker.utils.technical.technical_analysis_of_stock import technically_valid_stocks_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
@@ -22,14 +23,20 @@ STOCK_SYMBOL_KEY = 'symbol'
 STOCK_PIVOT_KEY = 'pivot'
 
 
+def process_background_tasks(request):
+    process_tasks_cmd = "workon stocks && python manage.py process_tasks"
+    subprocess.Popen(process_tasks_cmd, shell=True)
+    return HttpResponse('Executed process_tasks')
+
+
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
     serializer_class = TechnicalStockSerializer
-    queryset = Stock.objects.filter(is_technically_valid=True).order_by('symbol')
+    queryset = Stock.objects.filter(is_technically_valid=True).order_by(STOCK_SYMBOL_KEY)
 
 
 class BreakoutStocksViewSet(viewsets.ModelViewSet):
     serializer_class = BreakoutStockSerializer
-    queryset = Stock.objects.filter(last_breakout=datetime.date.today()).order_by('symbol')
+    queryset = Stock.objects.filter(last_breakout=datetime.date.today()).order_by(STOCK_SYMBOL_KEY)
 
 
 def count_stocks(request):
@@ -92,22 +99,21 @@ def pivot(request, symbol=None):
 
 def stocks_scrapper(request):
     marketwatch_scrapper_main()
-    return HttpResponse('Finished stocks_scrapper')
+    return HttpResponse('stocks_scrapper is launched')
 
 
 def stock_rater(request):
     stocks_rater_main()
-    return HttpResponse('Finished stock_rater')
+    return HttpResponse('stock_rater is launched')
 
 
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
-    return HttpResponse('Finished technically_valid_stocks')
+    return HttpResponse('technically_valid_stocks is launched')
 
 
 def breakout_detector(request):
-    breakout_detector()
-    return HttpResponse('Finished breakout_stocks')
+    return HttpResponse('Must get password')
 
 
 def get_nasdaq_composite_response(nasdaq_composite_info_list):
@@ -150,8 +156,8 @@ def parse_dates(params, from_date_param, to_date_param):
     elif to_date and not from_date:
         from_date = to_date
     elif not from_date and not to_date:
-        from_date = datetime.today().date()
-        to_date = datetime.today().date()
+        from_date = date_time.today().date()
+        to_date = date_time.today().date()
 
     return from_date, to_date
 

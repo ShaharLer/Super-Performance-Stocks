@@ -2,6 +2,9 @@ import os.path
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from background_task import background
+from django.utils import timezone
+
 from stocks_tracker.models import Stock
 from .marketwatch_financial_stock import MarketwatchFinancialStock
 
@@ -12,6 +15,42 @@ SALES_KEY = 'sales'
 DATA_DELIMITERS = ['%']
 
 
+def set_stock_data(stock, stock_data):
+    stock.net_income_growth = stock_data[NET_INCOME_KEY]
+    stock.eps_growth = stock_data[EPS_KEY]
+    stock.sales_growth = stock_data[SALES_KEY]
+    stock.is_scrapper_succeeded = True
+
+
+def reset_stock_data(stock):
+    stock.net_income_growth = stock.eps_growth = stock.sales_growth = None
+
+
+def update_new_stock(stock, stock_symbol, stock_name):
+    stock.symbol = stock_symbol
+    stock.name = stock_name
+
+
+def reset_existed_stock_attributes(stock):
+    stock.pivot = stock.is_accelerated = stock.is_eps_growth = stock.is_technically_valid = stock.is_breakout = None
+
+
+def update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_data):
+    if not stock.symbol:
+        update_new_stock(stock, stock_symbol, stock_name)
+    else:
+        reset_existed_stock_attributes(stock)
+
+    reset_stock_data(stock)
+
+    if stock_data is not None:
+        set_stock_data(stock, stock_data)
+    else:
+        stock.is_scrapper_succeeded = False
+
+    stock.last_scrapper_update = timezone.now
+
+
 def get_stock(symbol):
     stock = Stock() if len(Stock.objects.filter(symbol=symbol)) == 0 else Stock.objects.get(symbol=symbol)
     return stock
@@ -20,19 +59,12 @@ def get_stock(symbol):
 def write_to_db(stock_key, stock_data):
     try:
         stock_symbol = stock_key.split()[0]
+        stock_name = stock_key.split()[1]
         stock = get_stock(stock_symbol)
-        stock.symbol = stock_symbol
-        stock.name = stock_key.split()[1]
-        if stock_data is not None:
-            stock.net_income_growth = stock_data[NET_INCOME_KEY]
-            stock.eps_growth = stock_data[EPS_KEY]
-            stock.sales_growth = stock_data[SALES_KEY]
-            stock.is_scrapper_succeeded = True
-        else:
-            stock.is_scrapper_succeeded = False
+        update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_data)
         stock.save()
     except:
-        print(f'Failed to write {stock_key} to DB')
+        print(f'Failed to save stock {stock_key} in the DB after scrapper run')
 
 
 def write_stocks_to_db():
@@ -122,11 +154,8 @@ def get_all_stocks_list():
     return stocks_list
 
 
+@background()
 def marketwatch_scrapper_main():
     all_stocks_list = get_all_stocks_list()
     iterate_over_all_stock(all_stocks_list)
     write_stocks_to_db()
-
-
-if __name__ == "__main__":
-    marketwatch_scrapper_main()
