@@ -88,8 +88,12 @@ def calc_stock_breakout(stock):
 
 
 def is_today_a_trading_day():
-    formatted_date = datetime.today().strftime('%Y-%m-%d')
-    return not NYSE_CALENDAR.schedule(start_date=formatted_date, end_date=formatted_date).empty
+    try:
+        formatted_date = datetime.today().strftime('%Y-%m-%d')
+        return not NYSE_CALENDAR.schedule(start_date=formatted_date, end_date=formatted_date).empty
+    except Exception as e:
+        print(str(e))
+        raise Exception
 
 
 def is_market_open():
