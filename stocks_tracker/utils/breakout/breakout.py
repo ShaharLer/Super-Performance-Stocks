@@ -26,6 +26,15 @@ STOCK_PERCENT_CHANGE_THRESHOLD = 0.023
 BREAKOUT_EMAIL_RECIPIENTS = ['aradinbar91@gmail.com', 'shaharman5@gmail.com', 'tkhtur1@gmail.com']
 lock = threading.Lock()
 social_media = SocialMedia()
+breakouts = set()
+
+
+def update_stocks_breakout_in_db():
+    for stock in breakouts:
+        try:
+            stock.save()
+        except Exception as e:
+            print(f'Failed to update breakout for stock {stock.symbol} in the DB: {str(e)}')
 
 
 def send_alerts(stock_symbol, stock_volume_increase_ratio):
@@ -41,15 +50,6 @@ def send_alerts(stock_symbol, stock_volume_increase_ratio):
         print(f'Failed to send email of breakout for the stock {stock_symbol}')
     finally:
         lock.release()
-
-
-def update_stock_breakout_in_db(stock):
-    try:
-        stock.is_breakout = True
-        stock.last_breakout = timezone.now
-        stock.save()
-    except Exception as e:
-        print(f'Failed to update breakout for stock {stock.symbol} in the DB: {str(e)}')
 
 
 def get_relative_market_time_today():
@@ -78,7 +78,10 @@ def get_stock_volume_increase_ratio(stock, pivot_point):
 def calc_stock_breakout(stock):
     stock_volume_increase_ratio = get_stock_volume_increase_ratio(YahooFinancials(stock.symbol), stock.pivot)
     if stock_volume_increase_ratio:  # detected breakout
-        update_stock_breakout_in_db(stock)
+        stock.is_breakout = True
+        stock.last_breakout = timezone.now()
+        breakouts.add(stock)
+        print(f'{stock.symbol}: BREAKOUT!!!')
         send_alerts(stock.symbol, round(stock_volume_increase_ratio, 2))
     else:
         print(f'{stock.symbol}: No breakout')
@@ -96,13 +99,16 @@ def is_market_open():
 
 
 def detect_breakouts():
+    global breakouts
     while is_market_open():
         candidate_stocks = Stock.objects.filter(is_technically_valid=True).exclude(Q(pivot=None) | Q(is_breakout=True))
         if candidate_stocks:
-            print('\nRunning again!')
+            print(f'\nRunning breakout detection again!')
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
                 executor.map(calc_stock_breakout, candidate_stocks)
-            print(f'Waiting {TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES} minutes before next run...')
+            update_stocks_breakout_in_db()
+
+            print(f'Waiting {TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES} minutes from before next run...')
             timer.sleep(TIMEOUT_BETWEEN_BREAKOUT_RUNS_MINUTES * 60)
         else:
             print('There are no more stocks with pivot set that do not have breakout\nExiting...')
@@ -122,7 +128,8 @@ def run_breakout_threads():
 
 
 @background()
-def breakout(password):
+def breakout_main(password=''):
+    print('Going to run breakout detection')
     if not is_today_a_trading_day():
         print('Today there is no trading in the NYSE')
         return

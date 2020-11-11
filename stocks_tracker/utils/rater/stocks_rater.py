@@ -36,14 +36,24 @@ def is_stock_in_acceleration(stock):
            and is_accelerating(stock.sales_growth)
 
 
+def update_stock_fields(stock):
+    now = timezone.now()
+    stock.is_accelerated = is_stock_in_acceleration(stock)
+    stock.is_eps_growth = is_stock_in_eps_growth(stock.eps_growth)
+    stock.last_rater_update = now
+    if not stock.is_accelerated and not stock.is_eps_growth:
+        stock.is_technically_valid = False
+        stock.last_technically_valid_update = now
+
+
 @background()
 def stocks_rater_main():
+    print('Started stocks_rater_main')
     stocks = Stock.objects.all()
     for stock in stocks:
         try:
-            stock.is_accelerated = is_stock_in_acceleration(stock)
-            stock.is_eps_growth = is_stock_in_eps_growth(stock.eps_growth)
-            stock.last_rater_update = timezone.now
+            update_stock_fields(stock)
             stock.save()
         except:
             print(f'Failed to save stock {stock.symbol} in the DB after stock rater')
+    print('Finished stocks_rater_main')

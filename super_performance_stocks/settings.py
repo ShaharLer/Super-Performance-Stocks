@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'background_task',
 ]
 
+BACKGROUND_TASK_RUN_ASYNC = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

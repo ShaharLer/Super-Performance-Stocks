@@ -28,5 +28,5 @@ soupsieve==2.0.1
 sqlparse==0.4.1
 urllib3==1.25.10
 yagmail==0.14.245
-yahoofinancials==1.5
-django-background-tasks=1.2.5
+yahoofinancials==1.6
+django-background-tasks==1.2.5

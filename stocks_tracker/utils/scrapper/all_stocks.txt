@@ -3420,7 +3420,6 @@ HONE HarborOne-Bancorp
 HOOK HOOKIPA-Pharma-
 HOPE Hope-Bancorp
 HOTH Hoth-Therapeutics
-HOVNP Hovnanian-Enterprises-
 HPK HighPeak-Energy
 HPKEW HighPeak-Energy
 HQI HireQuest

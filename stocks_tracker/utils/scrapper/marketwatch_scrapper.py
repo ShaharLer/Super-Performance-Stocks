@@ -36,19 +36,18 @@ def reset_existed_stock_attributes(stock):
 
 
 def update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_data):
+    reset_stock_data(stock)
+    stock.last_scrapper_update = timezone.now()
+
     if not stock.symbol:
         update_new_stock(stock, stock_symbol, stock_name)
     else:
         reset_existed_stock_attributes(stock)
 
-    reset_stock_data(stock)
-
     if stock_data is not None:
         set_stock_data(stock, stock_data)
     else:
         stock.is_scrapper_succeeded = False
-
-    stock.last_scrapper_update = timezone.now
 
 
 def get_stock(symbol):
@@ -57,14 +56,14 @@ def get_stock(symbol):
 
 
 def write_to_db(stock_key, stock_data):
+    stock_symbol = stock_key.split()[0]
     try:
-        stock_symbol = stock_key.split()[0]
         stock_name = stock_key.split()[1]
         stock = get_stock(stock_symbol)
         update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_data)
         stock.save()
-    except:
-        print(f'Failed to save stock {stock_key} in the DB after scrapper run')
+    except Exception as e:
+        print(f'Failed to save stock {stock_symbol} in the DB after scrapper run: {str(e)}')
 
 
 def write_stocks_to_db():
@@ -156,6 +155,8 @@ def get_all_stocks_list():
 
 @background()
 def marketwatch_scrapper_main():
+    print('Started marketwatch_scrapper_main')
     all_stocks_list = get_all_stocks_list()
     iterate_over_all_stock(all_stocks_list)
     write_stocks_to_db()
+    print('Finished marketwatch_scrapper_main')

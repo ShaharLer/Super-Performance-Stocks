@@ -8,12 +8,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from stocks_tracker.utils.breakout.breakout import breakout
+from stocks_tracker.utils.breakout.breakout import breakout_main
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
-from stocks_tracker.utils.technical.technical_analysis_of_stock import technically_valid_stocks_main
+from stocks_tracker.utils.technical.technical_analysis import technically_valid_stocks_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
@@ -21,12 +21,7 @@ NASDAQ_FROM_DATE_KEY = 'from_date'
 NASDAQ_TO_DATE_KEY = 'to_date'
 STOCK_SYMBOL_KEY = 'symbol'
 STOCK_PIVOT_KEY = 'pivot'
-
-
-def process_background_tasks(request):
-    process_tasks_cmd = "workon stocks && python manage.py process_tasks"
-    subprocess.Popen(process_tasks_cmd, shell=True)
-    return HttpResponse('Executed process_tasks')
+PASSWORD_KEY = 'password'
 
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
@@ -36,7 +31,7 @@ class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
 
 class BreakoutStocksViewSet(viewsets.ModelViewSet):
     serializer_class = BreakoutStockSerializer
-    queryset = Stock.objects.filter(last_breakout=datetime.date.today()).order_by(STOCK_SYMBOL_KEY)
+    queryset = Stock.objects.filter(last_breakout__date=datetime.date.today()).order_by(STOCK_SYMBOL_KEY)
 
 
 def count_stocks(request):
@@ -50,8 +45,16 @@ def parse_params(params, symbol_key, pivot_key):
     return symbol, pivot_value
 
 
-def get_response_object(message, status_code):
+def get_response_object(message, status_code=status.HTTP_200_OK):
     return Response({'message': message}, status=status_code)
+
+
+@api_view(['GET'])
+def process_background_tasks(request):
+    process_tasks_cmd = "workon stocks && python manage.py process_tasks"
+    subprocess.Popen(process_tasks_cmd, shell=True)
+    print(process_tasks_cmd)
+    return get_response_object('process_tasks is launched successfully')
 
 
 def get_response_message_and_code_for_update(request):
@@ -97,23 +100,29 @@ def pivot(request, symbol=None):
     return get_response_object(message, status_code)
 
 
+@api_view(['GET'])
 def stocks_scrapper(request):
     marketwatch_scrapper_main()
-    return HttpResponse('stocks_scrapper is launched')
+    return get_response_object('stocks_scrapper is launched successfully')
 
 
+@api_view(['GET'])
 def stock_rater(request):
     stocks_rater_main()
-    return HttpResponse('stock_rater is launched')
+    return get_response_object('stock_rater is launched successfully')
 
 
+@api_view(['GET'])
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
-    return HttpResponse('technically_valid_stocks is launched')
+    return get_response_object('technically_valid_stocks is launched successfully')
 
 
+@api_view(['POST'])
 def breakout_detector(request):
-    return HttpResponse('Must get password')
+    password = request.data.get(PASSWORD_KEY, '') if request.data else ''
+    breakout_main(password)
+    return get_response_object('breakout detector is launched')
 
 
 def get_nasdaq_composite_response(nasdaq_composite_info_list):
