@@ -2,7 +2,7 @@ import concurrent.futures
 import threading
 import time as timer
 from datetime import datetime, date, time
-
+import yfinance as yf
 import pandas_market_calendars
 import pytz
 from background_task import background
@@ -37,9 +37,11 @@ def update_stocks_breakout_in_db():
             print(f'Failed to update breakout for stock {stock.symbol} in the DB: {str(e)}')
 
 
-def send_alerts(stock_symbol, stock_volume_increase_ratio):
-    message_to_send = f'Breakout!!! Buy alert for {stock_symbol}.\nCurrent volume is {stock_volume_increase_ratio} ' \
-                      f'times bigger than relational average volume'
+def send_alerts(stock_symbol, stock_volume_increase_ratio, stock_sector, stock_industry):
+    message_to_send = f'Breakout!!! Buy alert for {stock_symbol}.' \
+                      f'\nCurrent volume is {stock_volume_increase_ratio} times bigger than relational average volume.' \
+                      f'\nSector: {stock_sector}' \
+                      f'\nIndustry: {stock_industry}'
     lock.acquire()
     try:
         # social_media.send_whatsapp_message('"Stocks alerts"', message_to_send) TODO decide if should stay
@@ -82,7 +84,10 @@ def calc_stock_breakout(stock):
         stock.last_breakout = timezone.now()
         breakouts.add(stock)
         print(f'{stock.symbol}: BREAKOUT!!!')
-        send_alerts(stock.symbol, round(stock_volume_increase_ratio, 2))
+        object_for_more_data = yf.Ticker(stock.symbol)  # TODO create DB fields and move to scrapper
+        sector = object_for_more_data.info['sector']
+        industry = object_for_more_data.info['industry']
+        send_alerts(stock.symbol, round(stock_volume_increase_ratio, 2), sector, industry)
     else:
         print(f'{stock.symbol}: No breakout')
 
