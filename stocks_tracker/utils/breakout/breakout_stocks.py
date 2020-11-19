@@ -3,7 +3,7 @@ import getpass
 import threading
 import time as timer
 from datetime import datetime, date, time
-
+import yfinance as yf # requires yfinance - pip install yfinance
 import pytz
 from yahoofinancials import YahooFinancials
 
@@ -24,9 +24,9 @@ lock = threading.Lock()
 social_media = SocialMedia()
 
 
-def send_alerts(stock_symbol, stock_volume_increase_ratio):
+def send_alerts(stock_symbol, stock_volume_increase_ratio,stock_sector,stock_industry):
     message_to_send = f'Breakout!!! Buy alert for {stock_symbol}, as volume is bigger than the average by ' \
-                      f'{stock_volume_increase_ratio}'
+                      f'{stock_volume_increase_ratio}' + ' sector is ' + stock_sector + ' industry is ' + stock_industry
     print(message_to_send)
     lock.acquire()
     try:
@@ -66,7 +66,8 @@ def calc_stock_breakout(stock):
     if stock_volume_increase_ratio:  # detected breakout
         stock.last_breakout = date.today()
         stock.save()
-        send_alerts(stock.symbol, stock_volume_increase_ratio)
+        object_for_more_data = yf.Ticker(stock.symbol)
+        send_alerts(stock.symbol, stock_volume_increase_ratio,object_for_more_data.info['sector'],object_for_more_data.info['industry'])
     else:
         print(f'No breakout so far for: {stock.symbol}')
 
