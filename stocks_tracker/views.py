@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django.http import JsonResponse
 import dateutil.parser
 from django.http import HttpResponse
 from rest_framework import viewsets, status
@@ -12,6 +12,9 @@ from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.technical.technical_analsys_of_stock import technically_valid_stocks_main
+from stocks_tracker.utils.stage_analysys.stage import stage_main
+from stocks_tracker.utils.market_top.top import market_top_main
+from stocks_tracker.utils.Chart_patterns.high_tight_flag import high_tight_flag_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 
@@ -81,6 +84,13 @@ def stock_rater(request):
     stocks_rater_main()
     return HttpResponse('Finished stock_rater')
 
+def top(request):
+    data = market_top_main()
+    return JsonResponse(data, safe=False)
+
+def stage_analysys(request):
+    stage_main()
+    return HttpResponse('Finished stage_main')
 
 def technically_valid_stocks(request):
     technically_valid_stocks_main()
@@ -91,6 +101,9 @@ def breakout_stocks(request):
     breakout_stocks_main()
     return HttpResponse('Finished breakout_stocks')
 
+def high_tight_flag(request):
+    high_tight_flag_main()
+    return HttpResponse('Finished high tight flag evaluation')
 
 def get_nasdaq_composite_response(nasdaq_composite_info_list):
     try:
