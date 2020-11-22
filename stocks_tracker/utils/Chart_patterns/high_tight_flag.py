@@ -18,6 +18,7 @@ from stocks_tracker.utils.technical.technical_analsys_of_stock import is_stock_t
 
 ###  Global Vars ###
 lock = threading.Lock()
+global_flag_dict = {}
 ###              ###
 
 # Description -
@@ -149,35 +150,39 @@ def is_high_tight_flag(stock):
                                   + ' changing date is ' + str(map_with_index[index_after_surge][0]) + ' with price of ' +  str(map_with_index[index_after_surge][1]) + '\n' \
                                   + ' from date '+  str(map_with_index[index_after_surge][0]) + ' consolidate  until today with upper range 10 percent to lower range 25'
 
-
+        print(stock_symbol)
     return high_tight_flag_details
 
 
 # Description - save stock stage number to database.
 # [OBJ] stock - stock object.
 # return value - None.
-def update_db(stock):
+def update_global_dict(stock):
+    is_flag = False
     high_tight_flag_data = is_high_tight_flag(stock)
-    if high_tight_flag_data != '' :
-        lock.acquire(2)
-        try:
-            stock.is_high_tight_flag_pattern = False
-            stock.high_tight_flag_details = high_tight_flag_data
-            stock.save()
-            print(high_tight_flag_data)
-        except:
-            pass
-        lock.release()
+    if high_tight_flag_data != '' and high_tight_flag_data != None :
+        is_flag = True
+
+    lock.acquire(2)
+    try:
+        global_flag_dict[stock]=[is_flag,high_tight_flag_data]
+    except Exception as e: # work on python 3.x
+        print(str(e))
+        pass
+    lock.release()
 
 
 def high_tight_flag_main():
 
 
-    candidate_stocks = Stock.objects.filter()
-    print(candidate_stocks)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
-        executor.map(update_db, candidate_stocks)
+   candidate_stocks = Stock.objects.filter()
+   with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
+      executor.map(update_global_dict, candidate_stocks )
 
+   for stock in global_flag_dict:
+        stock.is_high_tight_flag_exists = global_flag_dict[stock][0]
+        stock.high_tight_flag_data = global_flag_dict[stock][1]
+        stock.save()
 
 
 if __name__ == "__main__":

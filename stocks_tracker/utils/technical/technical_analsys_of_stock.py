@@ -25,6 +25,8 @@ def is_stock_technically_valid(stock):
            and stock_current_price >= (stock_yearly_low * STOCK_YEARLY_LOW_MULTIPLIER)
 
 
+
+
 def calc_stock_technical_validation(stock):
     yahoo_stock = YahooFinancials(stock.symbol)
     stock.is_technically_valid = is_stock_technically_valid(yahoo_stock)
@@ -33,9 +35,10 @@ def calc_stock_technical_validation(stock):
 
 
 def technically_valid_stocks_main():
-    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True))
+    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True) | Q(is_high_tight_flag_exists=True))
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
         executor.map(calc_stock_technical_validation, candidate_stocks)
+
 
 
 if __name__ == "__main__":

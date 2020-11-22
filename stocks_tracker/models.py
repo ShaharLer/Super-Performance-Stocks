@@ -19,8 +19,8 @@ class Stock(models.Model):
     last_technically_valid_update = models.DateField('Last technical update', null=True, blank=True, default=None)
     last_breakout = models.DateField('Last breakout', null=True, blank=True, default=None)
     current_stage_number = models.IntegerField(null=True, blank=True, default=None)
-    is_high_tight_flag_pattern = models.BooleanField(default = False)
-    high_tight_flag_details = models.TextField(null=True,blank=True)
+    is_high_tight_flag_exists = models.BooleanField(default = False)
+    high_tight_flag_data = models.CharField(null=True,blank=True,max_length=500)
 
 
     def __str__(self):
