@@ -12,8 +12,6 @@ from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.technical.technical_analsys_of_stock import technically_valid_stocks_main
-from stocks_tracker.utils.stage_analysys.stage import stage_main
-from stocks_tracker.utils.market_top.top import market_top_main
 from stocks_tracker.utils.Chart_patterns.high_tight_flag import high_tight_flag_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer

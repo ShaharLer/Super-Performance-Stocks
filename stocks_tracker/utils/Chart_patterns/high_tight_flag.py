@@ -101,6 +101,7 @@ def is_high_tight_flag(stock):
     five_weeks_in_days = 25
     four_weeks_in_days = 20
     two_weeks_in_days = 10
+    three_weeks_in_days = 15
     stock_surge_minimum = 2 # equals to 100 percent of stock surge
     stock_surge_maximum = 2.2 # equals increase of 120 percent in  stock price
     max_value_for_stock_allowed_to_drop_to = 0.75
@@ -117,8 +118,8 @@ def is_high_tight_flag(stock):
         index_range_8_4_weeks = index_13_weeks_ago + y
         stock_surge = False
         # for every date between 13 weeks ago from today to 9 weeks ago from today, check if there was a date
-        # between the last 3-5 weeks from today with a surge between 100 to 120 percent
-        for x in range (two_weeks_in_days,0,-1):
+        # between the last 2-5 weeks from today with a surge between 100 to 120 percent
+        for x in range (three_weeks_in_days,0,-1):
 
             index_before_surge =  index_range_8_4_weeks + x
             price_before_surge = map_with_index[index_before_surge][1]
