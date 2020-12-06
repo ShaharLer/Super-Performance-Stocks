@@ -5,18 +5,27 @@
 
     <link rel="stylesheet"  href= "{% static 'css/style.css' %}">
   </head>
-<body>
+
+
+
+
+<body onload="watchlist.showSpinner();">
+  <div class="tooltip">Hover over me
+    <span class="tooltiptext">Tooltip text</span>
+  </div>
     <div class="container">
+      <br>
+      <br>
     <table id ="my_table" class="responsive-table">
-      <caption>Live Volume</caption>
       <thead>
         <tr>
-          <th scope="col"> <button onclick="sortTable(0)">Stock symbol</button></th>
-          <th scope="col">Eps array</th>
+          <th scope="col"> <button class="btn" onclick="watchlist.sortTable(0)">Stock symbol</button>
+          </th>
+          <th scope="col" >Eps array</th>
           <th scope="col">Net Income Array</th>
           <th scope="col">Sales Array</th>
-          <th scope="col"><button onclick="sortTable(4)">Volume</button></th>
-          <th scope="col"><button onclick="sortTable(5)">Price change</button></th>
+          <th scope="col"><button class="btn"  onclick="watchlist.sortTable(4)">Volume</button></th>
+          <th scope="col"><button  class="btn"  onclick="watchlist.sortTable(5)">Price change</button></th>
 
 
         </tr>
@@ -25,15 +34,22 @@
         <tr>
 
 
-                
+
 
         </tr>
 
 
-    
+
       </tbody>
     </table>
+
+
+    <div id="loading" class="loading">
+        Loading&#8230;
+    </div>
+
   </div>
-  <script  src="/static/js/main.js"></script>
+
 </body>
+
 </html>

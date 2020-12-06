@@ -5,6 +5,7 @@ var buy_price_map = new Map()
 var sell_price_map = new Map()
 var interval_var;
 var table = document.getElementById("my_table");
+var first_time_run = true
 
 
 function sortTable(n) {
@@ -95,6 +96,7 @@ function add_new_row_to_table(stock_symbol,eps_array,net_income_array,sales_arra
     var row = table.insertRow(1);
     row.id = stock_symbol
 
+
     // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
     var cell1 = row.insertCell(0);
     var cell2 = row.insertCell(1);
@@ -103,17 +105,28 @@ function add_new_row_to_table(stock_symbol,eps_array,net_income_array,sales_arra
     var cell5 = row.insertCell(4);
     var cell6 = row.insertCell(5);
     // Add some text to the new cells:
-    cell1.innerHTML = stock_symbol;
+
+    var link = document.createElement('a');
+    link.setAttribute('href', "https://stockcharts.com/h-sc/ui?s="+stock_symbol);
+    link.setAttribute("target", "_blank");
+    link.innerHTML = stock_symbol
+    cell1.appendChild(link);
     cell2.innerHTML = eps_array;
+    cell2.style.fontWeight ='bold';
     cell3.innerHTML = net_income_array;
+    cell3.style.fontWeight ='bold';
     cell4.innerHTML = sales_array;
+    cell4.style.fontWeight ='bold';
     cell5.innerHTML = volume_change;
+    cell5.style.fontWeight ='bold';
     cell6.innerHTML = price_change;
+    cell6.style.fontWeight ='bold';
 
 }
 
 
 function update_color_of_cell(cell, price_change){
+
 
     if (price_change > 0){
         cell.innerHTML.style.backgroundColor = "green";
@@ -135,7 +148,7 @@ function update_key_of_table(stock_symbol,eps_array,net_income_array,sales_array
     row.cells[3].innerHTML = sales_array;
     row.cells[4].innerHTML = volume_change;
     row.cells[5].innerHTML = price_change;
-    update_color_of_cell(row.cells[5],price_change)
+    //update_color_of_cell(row.cells[5],price_change)
 
 }
 
@@ -164,6 +177,10 @@ function get_volume_update(){
                         add_new_row_to_table( key, stock_dict_parsed[key][0], stock_dict_parsed[key][1], stock_dict_parsed[key][2], stock_dict_parsed[key][3],stock_dict_parsed[key][4],stock_dict_parsed[key][5]);
                     }
                 }
+                if (first_time_run == true){
+                    hideSpinner();
+                    first_time_run = false
+                }
             }
         }
     });
@@ -171,10 +188,22 @@ function get_volume_update(){
 
 // utility function to get get_volume_update to run first and then every interval getting an update
 function setIntervalAndExecute(fn, t) {
+   // showSpinner();
     fn();
+    //hideSpinner() ;
     return(setInterval(fn, t));
 }
 
 // running get_volume_update every refresh time.
-let refresh_time = 20000
+let refresh_time = 2000
 setIntervalAndExecute(get_volume_update, refresh_time);
+
+var loadingDiv = document.getElementById('loading');
+
+function showSpinner() {
+  loadingDiv.style.visibility = 'visible';
+}
+
+function hideSpinner() {
+  loadingDiv.style.visibility = 'hidden';
+}

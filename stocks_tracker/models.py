@@ -18,6 +18,7 @@ class Stock(models.Model):
     last_rater_update = models.DateField('Last rater update', null=True, blank=True, default=None)
     last_technically_valid_update = models.DateField('Last technical update', null=True, blank=True, default=None)
     last_breakout = models.DateField('Last breakout', null=True, blank=True, default=None)
+    is_stock_in_watchlist = models.BooleanField(null=True)
 
     def __str__(self):
         return self.symbol

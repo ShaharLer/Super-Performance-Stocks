@@ -11,6 +11,7 @@ STOCK_YEARLY_LOW_MULTIPLIER = 1.3
 
 
 def is_stock_technically_valid(stock):
+    print(stock)
     stock_50_ma = stock.get_50day_moving_avg()
     stock_200_ma = stock.get_200day_moving_avg()
     stock_yearly_high = stock.get_yearly_high()
@@ -33,7 +34,14 @@ def calc_stock_technical_validation(stock):
 
 
 def technically_valid_stocks_main():
-    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True))
+
+    candidate_stocks = Stock.objects.filter(Q(is_technically_valid=True))
+    for stock in candidate_stocks:
+        print('here')
+        stock.is_technically_valid = False
+        stock.save()
+
+    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) )
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
         executor.map(calc_stock_technical_validation, candidate_stocks)
 

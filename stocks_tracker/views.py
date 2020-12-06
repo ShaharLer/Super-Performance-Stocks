@@ -8,6 +8,7 @@ from stocks_tracker.utils.technical.technical_analsys_of_stock import *
 from stocks_tracker.utils.volume.volume_watchlist_of_valid_stock import *
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
@@ -49,4 +50,11 @@ def volume_watchlist(request):
 
 def volume_update(request):
     data = volume_watchlist_of_valid_stock_main()
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def get_stock_info(request):
+    stock_symbol = (request.POST['symbol'])
+    data = get_specific_stock(stock_symbol)
+    print(data)
     return JsonResponse(data, safe=False)
