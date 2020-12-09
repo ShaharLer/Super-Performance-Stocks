@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.utils import timezone
 
 
 class Stock(models.Model):
@@ -19,6 +18,9 @@ class Stock(models.Model):
     last_rater_update = models.DateTimeField('Last rater update', null=True, blank=True, default=None)
     last_technically_valid_update = models.DateTimeField('Last technical update', null=True, blank=True, default=None)
     last_breakout = models.DateTimeField('Last breakout', null=True, blank=True, default=None)
+
+    class Meta:
+        ordering = ['symbol']
 
     def __str__(self):
         return self.symbol
