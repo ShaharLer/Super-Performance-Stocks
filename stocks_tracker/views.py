@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from stocks_tracker.utils.chart_patterns.high_tight_flag import high_tight_flag_main
 from stocks_tracker.utils.breakout.breakout import breakout_main
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
@@ -169,6 +169,12 @@ def parse_dates(params, from_date_param, to_date_param):
         to_date = date_time.today().date()
 
     return from_date, to_date
+
+
+def high_tight_flag(request):
+    high_tight_flag_main()
+    return HttpResponse('Finished high tight flag evaluation')
+
 
 
 @api_view(['GET'])

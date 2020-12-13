@@ -18,6 +18,8 @@ class Stock(models.Model):
     last_rater_update = models.DateTimeField('Last rater update', null=True, blank=True, default=None)
     last_technically_valid_update = models.DateTimeField('Last technical update', null=True, blank=True, default=None)
     last_breakout = models.DateTimeField('Last breakout', null=True, blank=True, default=None)
+    is_high_tight_flag_exists = models.BooleanField(default = False)
+    high_tight_flag_data = models.CharField(null=True,blank=True,max_length=500)
 
     class Meta:
         ordering = ['symbol']

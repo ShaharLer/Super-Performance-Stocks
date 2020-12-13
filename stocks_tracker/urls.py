@@ -17,5 +17,6 @@ urlpatterns = [
     path('technical/', views.technically_valid_stocks),
     path('breakout/', views.breakout_detector),
     path('nasdaq/', views.nasdaq_info),
+    path('flag/', views.high_tight_flag),
     path('background/', views.process_background_tasks)
 ]
