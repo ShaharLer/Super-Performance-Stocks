@@ -58,6 +58,12 @@ def volume_watchlist_of_valid_stock():
     print(stocks_dict)
     return json.loads(json.dumps(stocks_dict))
 
+def remove_stock_from_db(stock_symbol):
+    stock = Stock.objects.get(symbol=stock_symbol)
+    if (stock != None):
+        stock.is_stock_in_watchlist = False
+        stock.save()
+
 
 def volume_watchlist_of_valid_stock_main():
    return volume_watchlist_of_valid_stock()

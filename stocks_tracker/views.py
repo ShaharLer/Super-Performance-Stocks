@@ -58,3 +58,9 @@ def get_stock_info(request):
     data = get_specific_stock(stock_symbol)
     print(data)
     return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def remove_stock_from_watchlist(request):
+    stock_symbol = (request.POST['symbol'])
+    remove_stock_from_db(stock_symbol)
+    return HttpResponse('Finished removing stock from watchlist db')
