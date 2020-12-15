@@ -18,5 +18,8 @@ urlpatterns = [
     path('breakout/', views.breakout_detector),
     path('nasdaq/', views.nasdaq_info),
     path('flag/', views.high_tight_flag),
-    path('background/', views.process_background_tasks)
+    path('background/', views.process_background_tasks),
+    path('volume_update/', views.volume_update),
+    path('get_stock_info',views.get_stock_info),
+    path('remove_from_watchlist',views.remove_stock_from_watchlist)
 ]

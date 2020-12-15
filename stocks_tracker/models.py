@@ -20,6 +20,7 @@ class Stock(models.Model):
     last_breakout = models.DateTimeField('Last breakout', null=True, blank=True, default=None)
     is_high_tight_flag_exists = models.BooleanField(default = False)
     high_tight_flag_data = models.CharField(null=True,blank=True,max_length=500)
+    is_stock_in_watchlist = models.BooleanField(null=True)
 
     class Meta:
         ordering = ['symbol']

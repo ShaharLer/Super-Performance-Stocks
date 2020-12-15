@@ -1,7 +1,6 @@
 import datetime
 import subprocess
-from datetime import datetime as date_time
-
+from datetime import date
 import dateutil.parser
 from django.http import HttpResponse
 from rest_framework import viewsets, status
@@ -16,6 +15,12 @@ from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrap
 from stocks_tracker.utils.technical.technical_analysis import technically_valid_stocks_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from stocks_tracker.utils.watchlist.watchlist import *
+
+
 
 NASDAQ_FROM_DATE_KEY = 'from_date'
 NASDAQ_TO_DATE_KEY = 'to_date'
@@ -31,7 +36,7 @@ class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
 
 class BreakoutStocksViewSet(viewsets.ModelViewSet):
     serializer_class = BreakoutStockSerializer
-    queryset = Stock.objects.filter(last_breakout__date=datetime.date.today()).order_by(STOCK_SYMBOL_KEY)
+    queryset = Stock.objects.filter(last_breakout__date=datetime.today()).order_by(STOCK_SYMBOL_KEY)
 
 
 def count_stocks(request):
@@ -186,3 +191,22 @@ def nasdaq_info(request):
 
     nasdaq_composite_info_list = nasdaq_composite_info_main(from_date, to_date)
     return get_nasdaq_composite_response(nasdaq_composite_info_list)
+
+
+
+def volume_update(request):
+    data = watchlist_of_valid_stock_main()
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def get_stock_info(request):
+    stock_symbol = (request.POST['symbol'])
+    data = get_specific_stock(stock_symbol)
+    print(data)
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def remove_stock_from_watchlist(request):
+    stock_symbol = (request.POST['symbol'])
+    remove_stock_from_db(stock_symbol)
+    return HttpResponse('Finished removing stock from watchlist db')
