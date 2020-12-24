@@ -27,3 +27,6 @@ class Stock(models.Model):
 
     def __str__(self):
         return self.symbol
+
+class Stock_stat(models.Model):
+    symbol = models.CharField(max_length=255, unique=True)

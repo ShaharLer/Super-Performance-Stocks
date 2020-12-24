@@ -13,6 +13,7 @@ from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remo
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.technical.technical_analysis import technically_valid_stocks_main
+from stocks_tracker.utils.stock_stats.stock_stats import stock_stats_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
 from django.http import JsonResponse
@@ -180,6 +181,9 @@ def high_tight_flag(request):
     high_tight_flag_main()
     return HttpResponse('Finished high tight flag evaluation')
 
+def stock_stats(request):
+    stock_stats_main()
+    return HttpResponse('Finished stock stats evaluation')
 
 
 @api_view(['GET'])

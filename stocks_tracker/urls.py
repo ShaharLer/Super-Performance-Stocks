@@ -21,5 +21,6 @@ urlpatterns = [
     path('background/', views.process_background_tasks),
     path('volume_update/', views.volume_update),
     path('get_stock_info',views.get_stock_info),
-    path('remove_from_watchlist',views.remove_stock_from_watchlist)
+    path('remove_from_watchlist',views.remove_stock_from_watchlist),
+    path('stock_stats/',views.stock_stats)
 ]
