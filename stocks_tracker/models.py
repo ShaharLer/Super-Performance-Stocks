@@ -30,3 +30,16 @@ class Stock(models.Model):
 
 class Stock_stat(models.Model):
     symbol = models.CharField(max_length=255, unique=True)
+    yahoo_date_format = models.CharField(max_length=255, unique=False)
+    success_rate_20_8 = models.IntegerField(null=True, blank=True, default=None)
+    success_rate_15_6 = models.IntegerField(null=True, blank=True, default=None)
+    success_rate_10_4 = models.IntegerField(null=True, blank=True, default=None)
+    success_rate_18_7 = models.IntegerField(null=True, blank=True, default=None)
+    enter_price = models.FloatField(null=True, blank=True, default=None)
+
+    # def __init__(self,symbol,date,enter_price):
+    #     super(Stock_stat, self).__init__()
+    #
+    #     self.yahoo_date_format = date
+    #     self.symbol = symbol
+    #     self.enter_price = enter_price
