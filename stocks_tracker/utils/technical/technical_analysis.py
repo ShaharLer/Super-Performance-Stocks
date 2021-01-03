@@ -49,7 +49,7 @@ def calc_stock_technical_validation(stock):
 def technically_valid_stocks_main():
     print('Started technically_valid_stocks_main')
     global stocks
-    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True) | Q(is_high_tight_flag_exists=True)).exclude(is_breakout=True)
+    candidate_stocks = Stock.objects.filter(Q(is_accelerated=True) | Q(is_eps_growth=True) ).exclude(is_breakout=True)
     if candidate_stocks:
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(candidate_stocks)) as executor:
             executor.map(calc_stock_technical_validation, candidate_stocks)

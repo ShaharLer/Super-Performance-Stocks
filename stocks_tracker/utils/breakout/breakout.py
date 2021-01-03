@@ -9,8 +9,8 @@ from background_task import background
 from django.db.models import Q
 from django.utils import timezone
 from yahoofinancials import YahooFinancials
-
-from stocks_tracker.models import Stock
+from stocks_tracker.utils.stock_stats.stock_stats import *
+from stocks_tracker.models import *
 from .social_media import SocialMedia
 
 US_EASTERN = 'US/Eastern'
@@ -88,6 +88,7 @@ def calc_stock_breakout(stock):
         sector = object_for_more_data.info['sector']
         industry = object_for_more_data.info['industry']
         send_alerts(stock.symbol, round(stock_volume_increase_ratio, 2), sector, industry)
+        create_new_stock_stat(stock.symbol, stock.pivot, str(datetime.date.today()))
     else:
         print(f'{stock.symbol}: No breakout')
 
