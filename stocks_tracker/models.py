@@ -21,6 +21,11 @@ class Stock(models.Model):
     is_high_tight_flag_exists = models.BooleanField(default = False)
     high_tight_flag_data = models.CharField(null=True,blank=True,max_length=500)
     is_stock_in_watchlist = models.BooleanField(null=True)
+    target_avg_sales = models.CharField(null=True,blank=True,max_length=500)
+    target_avg_eps = models.CharField(null=True,blank=True,max_length=500)
+    target_sales_growth = models.CharField(null=True,blank=True,max_length=500)
+    is_growth_potential = models.BooleanField(null=True)
+    is_yahoo_scrapper_succeeded = models.BooleanField(null=True)
 
     class Meta:
         ordering = ['symbol']

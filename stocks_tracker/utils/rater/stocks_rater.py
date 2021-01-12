@@ -6,6 +6,7 @@ from stocks_tracker.models import Stock
 QUARTERS_TO_FOLLOW_GROWTH = 3
 QUARTERS_TO_FOLLOW_ACCELERATION = 2
 EPS_GROWTH_THRESHOLD = 30
+SALES_GROWTH_THRESHOLD = 40
 
 
 def is_stock_in_eps_growth(eps_list):
@@ -35,18 +36,31 @@ def is_stock_in_acceleration(stock):
            and is_accelerating(stock.eps_growth) \
            and is_accelerating(stock.sales_growth)
 
+def is_growth_potential(stock):
+
+    if ((stock.target_sales_growth) and (stock.target_sales_growth != 'N/A')):
+        sales_growth_number = (float(stock.target_sales_growth[:-1].replace(',','')))
+    else:
+        return False
+
+    if (sales_growth_number>=SALES_GROWTH_THRESHOLD):
+        print(sales_growth_number)
+        return True
+
+    return False
+
 
 def update_stock_fields(stock):
     now = timezone.now()
+    stock.is_growth_potential = is_growth_potential(stock)
     stock.is_accelerated = is_stock_in_acceleration(stock)
     stock.is_eps_growth = is_stock_in_eps_growth(stock.eps_growth)
     stock.last_rater_update = now
-    if not stock.is_accelerated and not stock.is_eps_growth:
+    if not stock.is_accelerated and not stock.is_eps_growth and not stock.is_growth_potential:
         stock.is_technically_valid = False
         stock.last_technically_valid_update = now
 
 
-@background()
 def stocks_rater_main():
     print('Started stocks_rater_main')
     stocks = Stock.objects.all()

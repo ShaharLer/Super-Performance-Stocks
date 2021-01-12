@@ -13,6 +13,7 @@ urlpatterns = [
     path('pivot/', views.pivot),
     path('pivot/<str:symbol>/', views.pivot),
     path('scrapper/', views.stocks_scrapper),
+    path('yahoo_scrapper/', views.yahoo_stocks_scrapper),
     path('rater/', views.stock_rater),
     path('technical/', views.technically_valid_stocks),
     path('breakout/', views.breakout_detector),

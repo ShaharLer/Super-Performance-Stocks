@@ -12,6 +12,7 @@ from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_i
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
+from stocks_tracker.utils.scrapper.yahoo_scrapper import yahoo_scrapper_main
 from stocks_tracker.utils.technical.technical_analysis import technically_valid_stocks_main
 from .models import Stock
 from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
@@ -109,6 +110,10 @@ def pivot(request, symbol=None):
 def stocks_scrapper(request):
     marketwatch_scrapper_main()
     return get_response_object('stocks_scrapper is launched successfully')
+
+def yahoo_stocks_scrapper(request):
+    yahoo_scrapper_main()
+    return get_response_object('yahoo_stocks_scrapper is launched successfully')
 
 
 @api_view(['GET'])
