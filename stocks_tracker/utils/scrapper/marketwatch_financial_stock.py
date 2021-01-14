@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
-MARKETWATCH_URL = 'https://www.marketwatch.com/investing/stock/{}/financials/income/quarter'
+MARKETWATCH_URL_Q = 'https://www.marketwatch.com/investing/stock/{}/financials/income/quarter'
+MARKETWATCH_URL_Y = 'https://www.marketwatch.com/investing/stock/{}/financials/income'
 
 EPS_GROWTH_TEXTS = 'EPS (Basic) Growth'
 NET_INCOME_GROWTH_TEXTS = 'Net Income Growth'
@@ -13,16 +14,20 @@ ZERO_VALUE = '0%'
 
 class MarketwatchFinancialStock:
 
-    def __init__(self, stock_name):
+    def __init__(self, stock_name,duration):
+        self.duration = duration
         self.stock_name = stock_name
         self.soup = self.get_html_financial_data()
-        self.__q_eps_growth_array = []
-        self.__q_net_income_growth_array = []
-        self.__q_sales_growth_array = []
+        self.__eps_growth_array = []
+        self.__net_income_growth_array = []
+        self.__sales_growth_array = []
         self.fill_values()
 
     def get_html_financial_data(self):
-        url = MARKETWATCH_URL.format(self.stock_name)
+        if (self.duration == 'q'):
+            url = MARKETWATCH_URL_Q.format(self.stock_name)
+        else:
+            url = MARKETWATCH_URL_Y.format(self.stock_name)
         page = requests.get(url)
         return BeautifulSoup(page.content, 'html.parser')
 
@@ -41,17 +46,17 @@ class MarketwatchFinancialStock:
         for soup_result in soup_results_array:
             for row in soup_result.findAll('td'):
                 if row.text.find(EPS_GROWTH_TEXTS) >= 0:
-                    self.__q_eps_growth_array = MarketwatchFinancialStock.get_growth_array(row)
+                    self.__eps_growth_array = MarketwatchFinancialStock.get_growth_array(row)
                 elif row.text.find(NET_INCOME_GROWTH_TEXTS) >= 0:
-                    self.__q_net_income_growth_array = MarketwatchFinancialStock.get_growth_array(row)
+                    self.__net_income_growth_array = MarketwatchFinancialStock.get_growth_array(row)
                 elif row.text.find(SALES_GROWTH_TEXTS) >= 0:
-                    self.__q_sales_growth_array = MarketwatchFinancialStock.get_growth_array(row)
+                    self.__sales_growth_array = MarketwatchFinancialStock.get_growth_array(row)
 
-    def get_q_eps_growth_array(self):
-        return self.__q_eps_growth_array
+    def get_eps_growth_array(self):
+        return self.__eps_growth_array
 
-    def get_q_net_income_growth_array(self):
-        return self.__q_net_income_growth_array
+    def get_net_income_growth_array(self):
+        return self.__net_income_growth_array
 
-    def get_q_sales_growth_array(self):
-        return self.__q_sales_growth_array
+    def get_sales_growth_array(self):
+        return self.__sales_growth_array

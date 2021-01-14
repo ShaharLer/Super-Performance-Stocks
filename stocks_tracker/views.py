@@ -107,9 +107,15 @@ def pivot(request, symbol=None):
 
 
 @api_view(['GET'])
-def stocks_scrapper(request):
-    marketwatch_scrapper_main()
+def stocks_scrapper_q(request):
+    marketwatch_scrapper_main('q')
     return get_response_object('stocks_scrapper is launched successfully')
+
+@api_view(['GET'])
+def stocks_scrapper_y(request):
+    marketwatch_scrapper_main('y')
+    return get_response_object('stocks_scrapper is launched successfully')
+
 
 def yahoo_stocks_scrapper(request):
     yahoo_scrapper_main()
