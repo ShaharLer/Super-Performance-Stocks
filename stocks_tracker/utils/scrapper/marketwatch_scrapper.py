@@ -81,6 +81,7 @@ def write_stocks_to_db(duration):
 
 def get_data_as_number(data_as_string):
     try:
+        data_as_string = data_as_string.replace(',','')
         for delimiter in DATA_DELIMITERS:
             data_as_string = data_as_string.replace(delimiter, '')
         return float(data_as_string)
@@ -96,6 +97,7 @@ def calc_stock_data_by_key(stock, stock_data_key, stock_data_dict):
         data_list = stock.get_eps_growth_array()
     elif stock_data_key == SALES_KEY:
         data_list = stock.get_sales_growth_array()
+
 
     data_list = [get_data_as_number(data) for data in data_list]
     stock_data_dict[stock_data_key] = data_list if None not in data_list else []
@@ -115,7 +117,7 @@ def run_stock_scrapper(stock_key,duration):
     try:
         stock_data = get_stock_data(stock_key.split()[0],duration)
         global_stocks_dict[stock_key] = stock_data
-        print(stock_data)
+
     except:
         global_stocks_dict[stock_key] = None
 

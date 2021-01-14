@@ -37,7 +37,8 @@ class MarketwatchFinancialStock:
         next_tag = row
         for _ in range(QUARTERS_NUMBER + 1):
             new_tag = next_tag.find_next('td')
-            array_of_values.append(ZERO_VALUE if new_tag.text == NO_DATA else new_tag.text)
+            if (new_tag.text != ' '):
+                array_of_values.append(ZERO_VALUE if new_tag.text == NO_DATA else new_tag.text)
             next_tag = new_tag
         return array_of_values
 
