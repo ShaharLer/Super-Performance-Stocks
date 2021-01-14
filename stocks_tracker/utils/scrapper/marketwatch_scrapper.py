@@ -142,7 +142,7 @@ def iterate_over_all_stock(all_stocks,duration):
 
 
 def get_all_stocks_list():
-    all_stocks_file = 'all.txt'
+    all_stocks_file = 'all_stocks.txt'
     all_stocks_file_full_path = f'{os.path.dirname(os.path.realpath(__file__))}\\{all_stocks_file}'
     if not os.path.exists(all_stocks_file_full_path):
         return None
