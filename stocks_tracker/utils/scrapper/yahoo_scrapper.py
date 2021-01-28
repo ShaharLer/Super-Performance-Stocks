@@ -9,7 +9,6 @@ from .yahoo_financial_stock import YahooFinancialStock
 global_stocks_dict = {}  # The keys are stock symbols and the values are: YahooFinancialStock objects.
 
 
-
 def set_stock_data(stock, yahoo_stock_object):
     stock.target_avg_sales = yahoo_stock_object.target_avg_sales
     stock.target_avg_eps = yahoo_stock_object.target_avg_eps
@@ -27,7 +26,8 @@ def update_new_stock(stock, stock_symbol, stock_name):
 
 
 def reset_existed_stock_attributes(stock):
-    stock.pivot = stock.is_accelerated = stock.is_eps_growth = stock.is_technically_valid = stock.is_breakout = None
+    stock.pivot = stock.is_accelerated = stock.is_eps_growth = stock.is_technically_valid = stock.is_breakout = \
+        stock.price_to_sell = None
 
 
 def update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, yahoo_stock_object):
@@ -64,15 +64,6 @@ def write_to_db(stock_key, yahoo_stock_object):
 def write_stocks_to_db():
     for stock_key in global_stocks_dict:
         write_to_db(stock_key, global_stocks_dict[stock_key])
-
-
-def get_data_as_number(data_as_string):
-    try:
-        for delimiter in DATA_DELIMITERS:
-            data_as_string = data_as_string.replace(delimiter, '')
-        return float(data_as_string)
-    except ValueError:
-        return None
 
 
 def get_yahoo_stock_object(stock_symbol):
@@ -131,6 +122,7 @@ def get_all_stocks_list():
     return stocks_list
 
 
+@background()
 def yahoo_scrapper_main():
     print('Started yahoo_scrapper_main')
     all_stocks_list = get_all_stocks_list()

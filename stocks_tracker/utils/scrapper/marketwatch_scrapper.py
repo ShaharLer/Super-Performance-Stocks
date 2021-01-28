@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from background_task import background
 from django.utils import timezone
 
-from stocks_tracker.models import Stock
+from stocks_tracker import models
 from .marketwatch_financial_stock import MarketwatchFinancialStock
 
 global_stocks_dict = {}  # The keys are stock symbols and the values are: net-income, eps and sales growths arrays.
@@ -16,23 +16,24 @@ DATA_DELIMITERS = ['%']
 
 
 def set_stock_data(stock, stock_data, duration):
-    if (duration == 'q'):
+    if duration == 'q':
         stock.net_income_growth_q = stock_data[NET_INCOME_KEY]
         stock.eps_growth_q = stock_data[EPS_KEY]
         stock.sales_growth_q = stock_data[SALES_KEY]
         stock.is_scrapper_succeeded_q = True
     else:
-        stock.net_income_growth_y= stock_data[NET_INCOME_KEY]
+        stock.net_income_growth_y = stock_data[NET_INCOME_KEY]
         stock.eps_growth_y = stock_data[EPS_KEY]
         stock.sales_growth_y = stock_data[SALES_KEY]
         stock.is_scrapper_succeeded_y = True
 
 
 def reset_stock_data(stock,duration):
-    if (duration == 'q'):
+    if duration == 'q':
         stock.net_income_growth_q = stock.eps_growth_q = stock.sales_growth_q = None
     else:
         stock.net_income_growth_y = stock.eps_growth_y = stock.sales_growth_y = None
+
 
 def update_new_stock(stock, stock_symbol, stock_name):
     stock.symbol = stock_symbol
@@ -40,7 +41,8 @@ def update_new_stock(stock, stock_symbol, stock_name):
 
 
 def reset_existed_stock_attributes(stock):
-    stock.pivot = stock.is_accelerated = stock.is_eps_growth = stock.is_technically_valid = stock.is_breakout = None
+    stock.pivot = stock.is_accelerated = stock.is_eps_growth = stock.is_technically_valid = stock.is_breakout = \
+        stock.price_to_sell = None
 
 
 def update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_data, duration):
@@ -59,8 +61,10 @@ def update_stock_fields_after_scrapper(stock, stock_symbol, stock_name, stock_da
 
 
 def get_stock(symbol):
-    stock = Stock() if len(Stock.objects.filter(symbol=symbol)) == 0 else Stock.objects.get(symbol=symbol)
-    return stock
+    if len(models.Stock.objects.filter(symbol=symbol)) == 0:  # stock does not exist yet
+        return models.Stock()
+    else:
+        return models.Stock.objects.get(symbol=symbol)
 
 
 def write_to_db(stock_key, stock_data, duration):
@@ -97,7 +101,6 @@ def calc_stock_data_by_key(stock, stock_data_key, stock_data_dict):
         data_list = stock.get_eps_growth_array()
     elif stock_data_key == SALES_KEY:
         data_list = stock.get_sales_growth_array()
-
 
     data_list = [get_data_as_number(data) for data in data_list]
     stock_data_dict[stock_data_key] = data_list if None not in data_list else []
@@ -165,9 +168,10 @@ def get_all_stocks_list():
     return stocks_list
 
 
+@background()
 def marketwatch_scrapper_main(duration):
-    print('Started marketwatch_scrapper_main')
+    print(f'Started marketwatch_scrapper_main with duration: {duration}')
     all_stocks_list = get_all_stocks_list()
     iterate_over_all_stock(all_stocks_list,duration)
     write_stocks_to_db(duration)
-    print('Finished marketwatch_scrapper_main')
+    print(f'Finished marketwatch_scrapper_main with duration: {duration}')

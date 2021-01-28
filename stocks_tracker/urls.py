@@ -15,6 +15,7 @@ urlpatterns = [
     path('scrapper_q/', views.stocks_scrapper_q),
     path('scrapper_y/', views.stocks_scrapper_y),
     path('yahoo_scrapper/', views.yahoo_stocks_scrapper),
+    path('sector_industry_update/', views.sector_industry_scrapper),
     path('rater/', views.stock_rater),
     path('technical/', views.technically_valid_stocks),
     path('breakout/', views.breakout_detector),
@@ -22,6 +23,7 @@ urlpatterns = [
     path('flag/', views.high_tight_flag),
     path('background/', views.process_background_tasks),
     path('volume_update/', views.volume_update),
-    path('get_stock_info',views.get_stock_info),
-    path('remove_from_watchlist',views.remove_stock_from_watchlist)
+    path('get_stock_info/', views.get_stock_info),
+    path('remove_from_watchlist/', views.remove_stock_from_watchlist),
+    path('filter_stocks/', views.filter_stocks),
 ]

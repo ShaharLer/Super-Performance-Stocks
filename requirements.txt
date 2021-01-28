@@ -13,6 +13,7 @@ django-compat==1.0.15
 django-cors-headers==3.5.0
 djangorestframework==3.12.1
 holidays==0.10.3
+html5lib==1.1
 idna==2.10
 korean-lunar-calendar==0.2.1
 lxml==4.6.0
@@ -33,6 +34,7 @@ sqlparse==0.4.1
 toolz==0.11.1
 trading-calendars==2.0.0
 urllib3==1.25.10
+webencodings==0.5.1
 yagmail==0.14.245
 yahoofinancials==1.6
 yfinance==0.1.55

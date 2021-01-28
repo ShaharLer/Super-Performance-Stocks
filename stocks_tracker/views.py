@@ -1,43 +1,48 @@
-import datetime
 import subprocess
-from datetime import date
+
 import dateutil.parser
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
 from stocks_tracker.utils.chart_patterns.high_tight_flag import high_tight_flag_main
-from stocks_tracker.utils.breakout.breakout import breakout_main
+from stocks_tracker.utils.filter.filter import get_filtered_stocks
 from stocks_tracker.utils.nasdaq.nasdaq_composite_info import nasdaq_composite_info_main
 from stocks_tracker.utils.pivot.pivot_processing import update_stock_in_db, remove_technical_attribute
 from stocks_tracker.utils.rater.stocks_rater import stocks_rater_main
 from stocks_tracker.utils.scrapper.marketwatch_scrapper import marketwatch_scrapper_main
 from stocks_tracker.utils.scrapper.yahoo_scrapper import yahoo_scrapper_main
+from stocks_tracker.utils.scrapper.sector_industry_updater import update_sector_and_industry
 from stocks_tracker.utils.technical.technical_analysis import technically_valid_stocks_main
-from .models import Stock
-from .serializers import TechnicalStockSerializer, BreakoutStockSerializer
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
 from stocks_tracker.utils.watchlist.watchlist import *
-
-
+from . import serializers
 
 NASDAQ_FROM_DATE_KEY = 'from_date'
 NASDAQ_TO_DATE_KEY = 'to_date'
 STOCK_SYMBOL_KEY = 'symbol'
 STOCK_PIVOT_KEY = 'pivot'
 PASSWORD_KEY = 'password'
+QUARTERLY_FILTERS = 'quarterly_filters'
+YEARLY_FILTERS = 'yearly_filters'
 
 
 class TechnicallyValidStocksViewSet(viewsets.ModelViewSet):
-    serializer_class = TechnicalStockSerializer
+    serializer_class = serializers.TechnicalStockSerializer
     queryset = Stock.objects.filter(is_technically_valid=True).order_by(STOCK_SYMBOL_KEY)
 
 
 class BreakoutStocksViewSet(viewsets.ModelViewSet):
-    serializer_class = BreakoutStockSerializer
+    serializer_class = serializers.BreakoutStockSerializer
     queryset = Stock.objects.filter(last_breakout__date=datetime.today()).order_by(STOCK_SYMBOL_KEY)
+
+
+@api_view(['GET'])
+def filter_stocks(request):
+    filtered_stocks = get_filtered_stocks(request.query_params)
+    return Response(serializers.StockSerializer(filtered_stocks, many=True).data, status=status.HTTP_200_OK)
 
 
 def count_stocks(request):
@@ -111,15 +116,23 @@ def stocks_scrapper_q(request):
     marketwatch_scrapper_main('q')
     return get_response_object('stocks_scrapper is launched successfully')
 
+
 @api_view(['GET'])
 def stocks_scrapper_y(request):
     marketwatch_scrapper_main('y')
     return get_response_object('stocks_scrapper is launched successfully')
 
 
+@api_view(['GET'])
 def yahoo_stocks_scrapper(request):
     yahoo_scrapper_main()
     return get_response_object('yahoo_stocks_scrapper is launched successfully')
+
+
+@api_view(['GET'])
+def sector_industry_scrapper(request):
+    update_sector_and_industry()
+    return get_response_object('update_sector_and_industry is launched successfully')
 
 
 @api_view(['GET'])
