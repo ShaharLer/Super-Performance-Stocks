@@ -62,7 +62,8 @@ def get_response_object(message, status_code=status.HTTP_200_OK):
 
 @api_view(['GET'])
 def process_background_tasks(request):
-    process_tasks_cmd = "workon stocks && python manage.py process_tasks"
+    # process_tasks_cmd = "workon stocks && python manage.py process_tasks"
+    process_tasks_cmd = "python manage.py process_tasks"
     subprocess.Popen(process_tasks_cmd, shell=True)
     print(process_tasks_cmd)
     return get_response_object('process_tasks is launched successfully')

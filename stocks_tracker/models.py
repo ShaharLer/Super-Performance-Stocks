@@ -35,6 +35,9 @@ class Stock(models.Model):
     is_growth_potential = models.BooleanField(null=True)
     is_yahoo_scrapper_succeeded = models.BooleanField(null=True)
     price_to_sell_ratio = models.FloatField(null=True, blank=True, default=None)
+    ev_to_sell_ratio = models.FloatField(null=True, blank=True, default=None)
+    ps_to_growth_ratio = models.FloatField(null=True, blank=True, default=None)
+    gross_margins = models.FloatField(null=True, blank=True, default=None)
 
     class Meta:
         ordering = ['symbol']

@@ -160,7 +160,7 @@ class FilteredStocks(object):
             return TRILLION
 
     @staticmethod
-    def calculate_ps_to_next_year(stock):
+    def calculate_ps_metrics(stock):
         yahoo_stock = YahooFinancials(stock.symbol)
         market_cup = yahoo_stock.get_market_cap()
         if stock.target_avg_sales:
@@ -168,13 +168,21 @@ class FilteredStocks(object):
             target_avg_sales = float(stock.target_avg_sales[:-1]) * multiplier
             try:
                 stock.price_to_sell_ratio = round(market_cup / target_avg_sales, 2)
+                stock.ps_to_growth_ratio = round(stock.price_to_sell_ratio / float(stock.target_sales_growth[:-1]),2)
+                ev = (yahoo_stock.get_key_statistics_data()[stock.symbol]["enterpriseValue"])
+                stock.ev_to_sell_ratio = round(ev / target_avg_sales, 2)
+                stock.gross_margins = round(yahoo_stock.get_gross_profit() / yahoo_stock.get_total_revenue() * 100,2)
+                print(stock.gross_margins)
+                print(stock.ev_to_sell_ratio)
+                print(stock.ps_to_growth_ratio)
+                print(stock.target_sales_growth)
             except Exception as e:
                 print(str(e))
 
     def calculate_ps_for_stocks(self):
         maximum_threads = 200
         with concurrent.futures.ThreadPoolExecutor(max_workers=maximum_threads) as executor:
-            executor.map(FilteredStocks.calculate_ps_to_next_year, self.stocks)
+            executor.map(FilteredStocks.calculate_ps_metrics, self.stocks)
 
     def filter_by_symbol(self):
         stock_symbol = self.filters.get(STOCK_SYMBOL, None)
