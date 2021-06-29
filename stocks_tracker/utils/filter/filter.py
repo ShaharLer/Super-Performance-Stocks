@@ -172,10 +172,10 @@ class FilteredStocks(object):
                 ev = (yahoo_stock.get_key_statistics_data()[stock.symbol]["enterpriseValue"])
                 stock.ev_to_sell_ratio = round(ev / target_avg_sales, 2)
                 stock.gross_margins = round(yahoo_stock.get_gross_profit() / yahoo_stock.get_total_revenue() * 100,2)
-                print(stock.gross_margins)
-                print(stock.ev_to_sell_ratio)
-                print(stock.ps_to_growth_ratio)
-                print(stock.target_sales_growth)
+                print("gross_margins: "+str(stock.gross_margins))
+                print("ev sells:" + str(stock.ev_to_sell_ratio))
+                print("ps_to_growth:" +str(stock.ps_to_growth_ratio))
+
             except Exception as e:
                 print(str(e))
 
